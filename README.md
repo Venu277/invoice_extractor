@@ -1,220 +1,288 @@
-# Axion: Intelligent Indian Invoice Extraction & GST Platform
+Axion
 
-Axion is a modern, enterprise-grade invoice intelligence and statutory GST compliance platform tailored for Indian businesses and accounting teams. Powered by FastAPI, SQLAlchemy 2.0, and a server-rendered Jinja2 interface, Axion converts unstructured invoice PDFs, scans, and physical receipts into validated GST records.
+Intelligent invoice extraction and GST management for small Indian businesses.
 
-Every downstream accounting function—ledger tracking, ageing analysis, accrual Profit & Loss, GSTR-1, GSTR-3B, HSN summaries, outgoing sales invoicing, and automated financial health alerts—operates directly on this verified pipeline.
+Show Image Show Image Show Image Show Image Show Image
 
----
+Axion reads invoice PDFs and scans, extracts the supplier, dates, GSTIN, taxes and line items, checks them against GST rules, and files them into one clean ledger. Everything else (payables and receivables, ageing, profit and loss, GSTR summaries, sales invoicing, Tally exports) runs on that verified data, so the numbers you see are the numbers on your invoices.
 
-## Key Capabilities
+<!-- Live demo: add your Render URL here, for example: **Live demo:** https://your-service.onrender.com -->
+Contents
+Why Axion
+Features
+How it works
+Tech stack
+Getting started
+Demo accounts
+Configuration
+Deploying to Render
+API
+Testing
+Project structure
+Troubleshooting
+Limitations and roadmap
+Contributing
+License
+Why Axion
 
-### 1. Robust Extraction Pipeline
-- **Tiered Parser**: High-speed extraction through `pdfplumber` and `pypdf`, automatically falling back to Tesseract OCR when processing scanned documents.
-- **Statutory GST Validation**: Validates 15-character GSTIN checksums, state code alignment, place of supply (Intra-state CGST+SGST vs. Inter-state IGST), line-item tax rates, and reverse charge applicability.
-- **Day-First Indian Date Resolution**: Normalizes diverse date formats (DD/MM/YYYY, DD-MM-YYYY, DD Month YYYY) and resolves payment terms to exact due dates.
+Small businesses receive invoices as PDFs, scans and phone photos, then retype them into spreadsheets. It is slow, mistakes creep in, and GST errors usually surface only at filing time. Axion extracts the data as invoices arrive, checks it straight away, and keeps everything in one organised place, so you always know who owes you, what you owe, and where your GST stands.
 
-### 2. Workspace Management & Saved Collections
-- **Current Invoices (Active Workspace)**: Dedicated view displaying invoices from the most recent upload session for review and batch approval.
-- **Clear Workspace**: One-click option to clear the active workspace while preserving the entire table within a named, permanent collection.
-- **Saved Collections**: Case-insensitive unique collection naming with month and year categorization, allowing accountants to organize invoices by filing periods or vendor batches.
+<!-- ## Screenshots Add images to docs/screenshots/ and uncomment this section. | Dashboard | Invoice review | |---|---| | ![Dashboard](docs/screenshots/dashboard.png) | ![Review](docs/screenshots/review.png) | -->
+Features
+Extraction and validation
+Tiered reading. Text PDFs are read with pdfplumber and pypdf. Scanned documents fall back to Tesseract OCR automatically.
+Fields extracted. Supplier, invoice number, invoice and due dates, GSTIN, place of supply, taxable value, CGST, SGST, IGST, totals, and line items with HSN or SAC codes.
+Indian date handling. Day-first dates (DD/MM/YYYY, DD-MM-YYYY, 15 Mar 2025) are normalised, and payment terms are resolved to exact due dates.
+GST checks. GSTIN format and state code, CGST and SGST equality, intra-state (CGST plus SGST) versus inter-state (IGST) tax, standard tax rates, and subtotal plus tax equals total. Problems show as warnings or errors and never stop an upload.
+Duplicate detection. The same supplier and invoice number, or the same file, is flagged.
+Review and workflow
+Review screen. Check the original document beside editable fields, fix anything misread, then approve or reject. Only approved invoices count in reports.
+Bulk upload. Upload several PDFs at once, or a ZIP archive of invoices.
+Workspace and collections. The Current Invoices view shows the latest upload session. Clear the workspace in one click while keeping everything in a named, permanent collection. Collection names are unique (case-insensitive) and grouped by month and year.
+Money tracking
+Payments and status. Record full or partial payments. Status updates automatically (unpaid, partly paid, paid), and overdue invoices are highlighted.
+Ageing. Receivables and payables are grouped into not due, 1 to 30, 31 to 60, 61 to 90, and 90+ days.
+Parties. A directory of vendors and customers with payment terms and credit limits, and a ledger for each party.
+Dashboard. Sales revenue with month-on-month change, purchases and expenses, net GST liability, pending reviews, receivables and payables with ageing bars, plain-language insights, active alerts, and top vendors and customers.
+Alerts. Overdue and due-soon invoices, validation problems, and GST filing reminders (GSTR-1 on the 11th and GSTR-3B on the 20th by default, configurable).
+Indian calendar. The header shows today's date in IST and the active financial year, for example FY 2026-27.
+Reports and GST
+Profit and loss. Accrual basis, from approved sales and purchase invoices.
+GSTR-1 style summary. B2B, B2CL and B2CS.
+GSTR-3B style summary. Output tax, input tax credit, and net payable, with the statutory set-off order (IGST, then CGST, then SGST).
+HSN summary. Quantity, taxable value and tax grouped by HSN or SAC code.
+PDF reports. A monthly business report, and a statutory report for a chosen filing month with a watermark.
 
-### 3. Outgoing Sales Invoice Generator
-- **Compliant Invoicing**: Generates clean sales invoices with automatic sequential numbering (`INV-YYYY-XXXX`).
-- **Interactive Line Items**: Readable input fields with positive integer quantity enforcement, dynamic tax computation, and support for multi-rate GST.
-- **PDF Generation**: Downloadable print-ready PDF invoices complete with bank payment details and UPI QR codes.
+The figures are working numbers for decision-making and reconciliation. They are not official filing forms and not tax advice.
 
-### 4. Statutory Reports & Watermarking
-- **Filing Ready Summaries**: Monthly and quarterly reports for GSTR-1 (B2B, B2CL, B2CS) and GSTR-3B with legal tax set-off sequence (IGST -> CGST -> SGST).
-- **Statutory PDF Report**: Prompts for filing month and year, inspects invoices in that period's collection, and renders a detailed audit PDF with the company's verified statutory watermark on the bottom right.
-- **Multi-Format Exports**: Export ledgers and summaries in CSV, formatted Excel (`.xlsx`) with frozen headers, and Tally XML voucher formats.
+Sales invoicing
+Generate GST invoices with automatic sequential numbering (INV-YYYY-XXXX).
+Multi-rate line items with automatic tax computation.
+Print-ready PDF with your bank details and a UPI QR code.
+Exports and backups
+CSV and formatted Excel (.xlsx) registers with frozen headers.
+Tally Prime XML with party ledger masters and balanced sales and purchase vouchers. Ledger names are configurable.
+Accountant package (ZIP) with the original invoice PDFs, Excel registers, GSTR summaries, profit and loss, and an index file.
+Backups from the Settings page.
+Teams and security
+Roles. Owner, accountant and staff, each with their own permissions (see Demo accounts).
+Tenant isolation. Every record belongs to a business, and every query is filtered by business_id.
+Passwords. Argon2id hashing, with lockout after 5 failed attempts in 5 minutes.
+Recovery. A single-use, time-limited reset token sent by email (requires the optional SMTP settings).
+Interface
 
-### 5. Multi-Tenant Security & Authentication
-- **Tenant Isolation**: Every database record is strictly isolated by `business_id` across all queries and services.
-- **Argon2id Password Encryption**: Passwords secured using state-of-the-art Argon2id hashing with rate-limited brute-force lockout (5 attempts / 5 minutes).
-- **Single-Use Password Recovery**: Dedicated "Forgot password?" option with token-based email dispatch, time-limited expiration, and direct dashboard access upon credential update.
-- **Live Indian Calendar**: Dashboard header displaying real-time Indian Standard Time (IST) date, day of the week, and active Indian Financial Year (e.g., `FY 2026-27`).
+Dark mode with a red palette, liquid-glass panels, squircle corners and a collapsible sidebar. All colours, radii and spacing come from CSS design tokens, with no emojis anywhere. See README_FRONTEND.md for how to change colours, copy and contact details.
 
----
+How it works
+Upload PDF, scan or ZIP
+Read textpdfplumber, pypdf, OCR
+Extract fieldssupplier, dates, GSTIN,taxes, line items
+ValidateGSTIN, state, tax split, rates,totals
+Review and approve
+Approved ledger
+Dashboard, ageing, alerts
+GST reports and profit andloss
+Exports: Tally, Excel, CSV, ZIP
 
-## Architecture & Principles
+Design principles
 
-1. **Extraction First**: Raw files undergo validation before entering the business ledger. Faulty or non-compliant invoices generate clear warnings without crashing ingestion.
-2. **Paise Precision**: All monetary values are stored in the database as integer paise (`BigInteger`). Floating-point arithmetic is prohibited; Python computations utilize `Decimal` with line-level half-up rounding (`ROUND_HALF_UP`).
-3. **Design System**: Built on a light green color palette (`#90cf8e`, `#a7dca5`, `#c6edc3`, `#e4fde1`, `#effdee`) using CSS custom design tokens for visual consistency and WCAG AA contrast compliance.
-
----
-
-## Quickstart & Setup
-
-### Prerequisites
-- Python 3.11 or higher
-- Git
-- Tesseract OCR (Optional, required only for scanned receipts or image-based PDFs)
-
-### Installation (PowerShell / Windows)
-
-```powershell
-# 1. Clone repository
+Extraction first. Files are validated before they enter the ledger. A faulty invoice produces a clear warning and never crashes ingestion.
+Paise precision. Money is stored as integer paise. Calculations use Python Decimal with half-up rounding at line level, and floating-point maths is not used.
+Strict tenant isolation. One business can never read or change another's data, and tests prove it.
+Layered code. Routers (web and API) call services, and services call models. The web pages and the REST API use the same service functions.
+Tech stack
+Layer	Technology
+Backend	FastAPI, Uvicorn
+Database	SQLAlchemy 2.0 and Alembic. SQLite locally, PostgreSQL in production (psycopg2)
+Validation and settings	Pydantic v2, pydantic-settings
+Extraction	pdfplumber, pypdf, pytesseract, pdf2image (needs Tesseract and Poppler)
+Reports and exports	ReportLab (PDF), openpyxl (Excel), Tally XML
+Security	argon2-cffi (Argon2id), PyJWT
+Background jobs	APScheduler
+Frontend	Jinja2 templates, CSS design tokens, vanilla JavaScript
+Tests	pytest, httpx
+Getting started
+Prerequisites
+Python 3.11 or newer
+Git
+Optional, for scanned invoices only: Tesseract OCR and Poppler. On Windows, install both and either add them to PATH or set TESSERACT_CMD and POPPLER_PATH in .env. Without them, text PDFs still work and scans show a clear message.
+Windows (PowerShell)
+powershell
+# 1. Clone the repository
 git clone https://github.com/Venu277/invoice_extractor.git
 cd invoice_extractor
 
-# 2. Create and activate virtual environment
+# 2. Create and activate a virtual environment
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Configure environment settings
+# 4. Create your settings file
 Copy-Item .env.example .env
 
-# 5. Run database migrations
-.\venv\Scripts\alembic.exe upgrade head
+# 5. Create the database tables
+alembic upgrade head
 
-# 6. Seed demo dataset (parties, invoices, payments)
+# 6. (Optional) Load demo data
 python scripts/seed_demo.py
 
-# 7. Start development server
-.\venv\Scripts\uvicorn.exe app.main:app --host 127.0.0.1 --port 8000 --reload
-```
+# 7. Start the server
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 
-### Installation (Linux / macOS / Bash)
+If PowerShell blocks the activation script, run Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned once and try again.
 
-```bash
-# 1. Clone repository
+macOS and Linux
+bash
 git clone https://github.com/Venu277/invoice_extractor.git
 cd invoice_extractor
 
-# 2. Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate
 
-# 3. Install dependencies
 pip install -r requirements.txt
-
-# 4. Configure environment settings
 cp .env.example .env
-
-# 5. Run database migrations
 alembic upgrade head
-
-# 6. Seed demo dataset
-python scripts/seed_demo.py
-
-# 7. Start server
+python scripts/seed_demo.py        # optional demo data
 uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
 
----
+Then open:
 
-## Access Points & Demo Accounts
+What	Address
+Application	http://localhost:8000
+Interactive API docs (Swagger)	http://localhost:8000/docs
+ReDoc	http://localhost:8000/redoc
+Health check	http://localhost:8000/health
 
-Once the server is running:
-- **Application Portal**: `http://localhost:8000`
-- **Interactive OpenAPI Documentation**: `http://localhost:8000/docs`
-- **ReDoc Documentation**: `http://localhost:8000/redoc`
+No demo data? Use Sign up on the home page. Creating an account also creates your business, and you become its owner.
 
-### Pre-Configured Accounts (Demo Seed)
+Demo accounts
 
-| Role | Email | Password | Permissions |
-|---|---|---|---|
-| Business Owner | `owner@demo.com` | `DemoPassword123!` | Full administrative access, backups, settings, reviews |
-| Accountant | `accountant@demo.com` | `DemoPassword123!` | Invoices, reviews, collections, GST reports, exports |
-| Staff | `staff@demo.com` | `DemoPassword123!` | Document upload, directory search, party records |
+Created only when you run python scripts/seed_demo.py on your own machine. They are never created in production.
 
----
+Role	Email	Password	Can do
+Owner	owner@demo.com	DemoPassword123!	Everything, including settings, team and backups
+Accountant	accountant@demo.com	DemoPassword123!	Invoices, reviews, collections, GST reports, exports
+Staff	staff@demo.com	DemoPassword123!	Upload documents, search the directory, view party records
+Configuration
 
-## Production Deployment on Render
+Settings are read from environment variables or a .env file. Copy .env.example to start.
 
-Axion includes full deployment configurations for Render web services and managed PostgreSQL databases.
+Variable	Purpose	Default
+APP_NAME	Application name	Axion
+APP_ENV	development or production	development
+DEBUG	Debug mode, keep false in production	true
+DATABASE_URL	Database connection. postgres:// and postgresql:// are converted to postgresql+psycopg2:// automatically	sqlite:///./data/app.db
+SECRET_KEY	Random string of 32 or more characters used for signing. Generate one with openssl rand -hex 32	none, must be set
+ALGORITHM	JWT signing algorithm	HS256
+ACCESS_TOKEN_EXPIRE_MINUTES	Login session length	720
+UPLOAD_DIR	Where uploaded invoice files are stored	./uploads
+LOG_DIR	Where log files are written	./logs
+BACKUP_DIR	Where backups are written	./backups
+OCR_ENABLED	Turn OCR on or off	true
+TESSERACT_CMD, POPPLER_PATH	Paths to the OCR tools if they are not on PATH	empty
+SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, SMTP_TLS	Email settings for password recovery (optional)	empty, port 587, TLS on
+GST_GSTR1_DUE_DAY, GST_GSTR3B_DUE_DAY	Day of month used for filing reminders	11, 20
+TALLY_LEDGER_*	Ledger names used in the Tally export (Purchase, Sales, Input and Output CGST, SGST, IGST, Round Off)	the names shown in .env.example
+SEED_DEMO	Whether to create demo data. Keep false in production	false
+Deploying to Render
 
-### Automated Blueprint (`render.yaml`)
+The repository includes a render.yaml blueprint for a single web service (axion-invoice-platform, free plan, Singapore region, Python 3.11.9).
 
-Deploy automatically via the Render Blueprint:
-1. Connect your GitHub repository to Render.
-2. Select **New** -> **Blueprint** in Render Dashboard.
-3. Select your repository. Render reads `render.yaml` and configures the web service and managed PostgreSQL database automatically.
+Push the repository to GitHub.
+In Render, choose New, then Blueprint, and select the repository.
+Create a PostgreSQL database in Render. The blueprint does not create one. Copy its Internal Database URL and paste it into the service's DATABASE_URL variable.
+Deploy. SECRET_KEY is generated for you, and SEED_DEMO is false.
+Open the service URL and use Sign up to create your first account.
 
-### Manual Render Setup
+The blueprint runs these commands, which you can also enter manually:
 
-If configuring manually in Render:
-1. **Service Type**: Web Service (Python)
-2. **Build Command**:
-   ```bash
-   pip install -r requirements.txt && alembic upgrade head
-   ```
-3. **Start Command**:
-   ```bash
-   uvicorn app.main:app --host 0.0.0.0 --port $PORT
-   ```
-4. **Health Check Path**: `/health`
+Setting	Value
+Build command	pip install -r requirements.txt && alembic upgrade head
+Start command	uvicorn app.main:app --host 0.0.0.0 --port $PORT
+Health check path	/health
 
-### Environment Variables
+Things to know about hosting
 
-| Variable | Description | Example / Default |
-|---|---|---|
-| `APP_ENV` | Application environment | `production` |
-| `DATABASE_URL` | Database connection string. Supports PostgreSQL and SQLite. `postgres://` or `postgresql://` URIs are normalized automatically to `postgresql+psycopg2://`. | `postgresql+psycopg2://user:password@hostname:5432/dbname` |
-| `SECRET_KEY` | 32+ character random hex or base64 string for session and JWT signing | Render auto-generates or `openssl rand -hex 32` |
-| `SEED_DEMO` | Whether to run demo seed script during deployment. Keep `false` in production. | `false` |
-| `UPLOAD_DIR` | Absolute path for stored invoice PDF files | `/var/data/uploads` or `./uploads` |
-| `COOKIE_SECURE` | Set to `true` when served over HTTPS | `true` |
-| `COOKIE_SAMESITE` | Cookie SameSite policy | `lax` |
-| `MAX_UPLOAD_SIZE_MB` | Maximum document upload size | `25` |
+Use PostgreSQL. Render's local disk is wiped on every deploy, so SQLite data would be lost.
+Uploaded files are stored in UPLOAD_DIR, also on that disk. To keep them across deploys, attach a Render persistent disk (a paid feature), mount it, and set UPLOAD_DIR to its path.
+OCR. Tesseract and Poppler are not preinstalled on Render's standard Python runtime, so scanned invoices need a Docker-based deploy, or run locally. Text PDFs work normally.
+Backups. The in-app file backup is for SQLite. On PostgreSQL, rely on Render's database backups.
+Free plan. The service may sleep when idle, so the first request after a pause can be slow.
+API
 
-### PostgreSQL & Storage Considerations
+Every feature in the web interface is also available through the REST API under /api/v1. Browse and try every endpoint at /docs. Sessions use JWT, and the same role permissions apply to the API and the web pages.
 
-- **Managed PostgreSQL**: SQLite files are stored on ephemeral container disks and wiped on every restart/redeploy. Connecting a Render PostgreSQL database provides persistent transaction storage.
-- **Persistent Disk for Uploads**: Invoice PDFs are stored at `UPLOAD_DIR`. To preserve uploaded files across deploys, add a Render Persistent Disk mounted at `/var/data/uploads` and set `UPLOAD_DIR=/var/data/uploads`.
-- **Database Backups**: In-app SQLite file backups are disabled gracefully when running on PostgreSQL; managed PostgreSQL instances should rely on automated database backups provided by Render.
+Testing
+bash
+pytest -v
 
----
+The suite covers money maths, tenant isolation, authentication and lockout, OCR degradation, extraction and GST rules, collections, exports, migrations and the frontend. Highlights:
 
-## Test Suite & Verification
-
-The test suite validates foundation math, security boundaries, tenant isolation, OCR degradation, GST set-off rules, collections, database migrations, and UI rendering across 39 integration test cases:
-
-```powershell
-# Run full test suite
-.\venv\Scripts\pytest.exe -v
-```
-
-### Test Highlights
-- `test_auth_and_tenant.py`: Multi-tenant isolation, Argon2id verification, brute-force lockouts.
-- `test_collections.py`: Case-insensitive collection name uniqueness, collection retrieval.
-- `test_forgot_password_and_clear_workspace.py`: Password recovery flow, single-use token lifecycle, workspace clearing.
-- `test_gst_and_exports.py`: GSTR-1 B2B/B2CL/B2CS calculations, GSTR-3B tax set-off rules, Tally XML vouchers.
-- `test_frontend_smoke.py`: Asset budgets, token-based color system compliance, zero emoji enforcement.
-- `test_migrations.py`: Automated schema verification ensuring SQLAlchemy models and Alembic migrations remain strictly synchronized.
-
----
-
-## Project Structure
-
-```
+Test file	What it protects
+test_auth_and_tenant.py	Tenant isolation, Argon2id verification, lockout
+test_collections.py	Case-insensitive collection names, retrieval
+test_forgot_password_and_clear_workspace.py	Password reset token lifecycle, clearing the workspace
+test_gst_and_exports.py	GSTR-1 and GSTR-3B maths, set-off rules, Tally XML
+test_frontend_smoke.py	Pages render, design tokens used, no emojis
+test_migrations.py	Models and Alembic migrations stay in sync
+Project structure
 invoice_extractor/
 ├── app/
-│   ├── config.py              # Environment configuration & Pydantic settings
-│   ├── db.py                  # SQLAlchemy engine & session management
-│   ├── deps.py                # Dependency injection & role authentication
-│   ├── extraction/            # OCR, PDF parsers, field regex, GST validation
-│   ├── gst/                   # GSTR-1, GSTR-3B tax set-off rules, HSN summary
-│   ├── models/                # SQLAlchemy database models (Invoice, User, Collection, etc.)
+│   ├── main.py             # FastAPI application entry point
+│   ├── config.py           # Settings (pydantic-settings)
+│   ├── db.py               # Engine and session management
+│   ├── deps.py             # Dependencies and role checks
+│   ├── extraction/         # PDF reading, OCR, field extraction, GST validation
+│   ├── gst/                # GSTR-1, GSTR-3B set-off, HSN summary
+│   ├── jobs/               # Scheduled background jobs
+│   ├── models/             # SQLAlchemy models
+│   ├── schemas/            # Pydantic schemas
+│   ├── services/           # Business logic (shared by web and API)
 │   ├── routers/
-│   │   ├── api/               # REST API endpoints (v1 auth, invoices, collections, reports)
-│   │   └── web/               # Server-rendered Jinja2 view controllers
-│   ├── schemas/               # Pydantic validation models
-│   ├── services/              # Business logic (invoice, auth, reporting, payments, backups)
-│   ├── static/                # CSS design tokens, JavaScript modules, SVG icons
-│   └── templates/             # Jinja2 templates (dashboard, invoices, collections, auth)
-├── data/                      # SQLite database storage (excluded from git)
-├── scripts/                   # Seeder, migration helpers, visual audit scripts
-├── tests/                     # Pytest automated test suite (38 test modules)
-└── alembic.ini                # Alembic migration configuration
-```
+│   │   ├── api/            # REST API (/api/v1)
+│   │   └── web/            # Server-rendered pages
+│   ├── static/             # CSS tokens, JavaScript, SVG icons
+│   └── templates/          # Jinja2 templates
+├── migrations/             # Alembic migrations
+├── scripts/                # Demo seeder and helper scripts
+├── tests/                  # Automated tests
+├── invoices/               # Sample invoice PDFs
+├── legacy/                 # Original extraction code the engine was ported from
+├── alembic.ini             # Migration configuration
+├── pytest.ini              # Test configuration
+├── render.yaml             # Render blueprint
+├── requirements.txt        # Python dependencies
+├── .env.example            # Settings template
+└── README_FRONTEND.md      # Frontend and theming guide
 
----
+The Python files in the repository root (app.py, database.py, extractor.py, processing.py, report.py, make_sample_invoices.py) belong to the early Streamlit prototype. They are kept for reference and are not used by the application in app/. The data/, uploads/, logs/ and backups/ folders are created at runtime and are not tracked in git.
 
-## License
+Troubleshooting
+Problem	Fix
+no such column or a missing table after pulling new code	Run alembic upgrade head to bring the database up to date
+ModuleNotFoundError	Activate the virtual environment and run pip install -r requirements.txt
+Scanned invoices are not read	Install Tesseract and Poppler, set TESSERACT_CMD and POPPLER_PATH, and check OCR_ENABLED=true
+Old styles after an update	Hard refresh the browser with Ctrl + F5
+PowerShell will not activate the virtual environment	Run Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned once
+Render build fails on a missing column	Make sure the build command includes alembic upgrade head, and that SEED_DEMO is false
+Limitations and roadmap
+Extraction depends on invoice layout. Unusual layouts may need a correction on the review screen, and line-item extraction is best effort.
+OCR accuracy depends on scan quality.
+The tax rate check flags invoices whose blended rate is not a standard slab, which can include genuine mixed-rate invoices.
+GST reports are working figures, not official filing forms.
+Ideas for later: bank statement matching, credit and debit notes, an audit trail, manual expense entry, quotations, a cash-flow forecast, and an email-in inbox.
+Contributing
 
-This project is licensed under the MIT License.
+Contributions are welcome.
+
+Fork the repository and create a branch for your change.
+Run pytest and make sure everything passes.
+Open a pull request that explains what changed and why.
+
+Please do not commit .env files, database files or real invoices.
+
+License
+
+Released under the MIT License.
