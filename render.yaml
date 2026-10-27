@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: axion-invoice-platform
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "720"
+      - key: DATABASE_URL
+        sync: false
+      - key: UPLOAD_DIR
+        value: ./uploads
+      - key: LOG_DIR
+        value: ./logs
+      - key: BACKUP_DIR
+        value: ./backups
+      - key: SEED_DEMO
+        value: "false"
+      - key: OCR_ENABLED
+        value: "true"

@@ -160,4 +160,8 @@ def seed():
 
 
 if __name__ == "__main__":
-    seed()
+    should_seed = os.environ.get("SEED_DEMO", "false").strip().lower() in ("true", "1", "yes")
+    if should_seed:
+        seed()
+    else:
+        print("Skipping demo seeding: SEED_DEMO environment variable is false (default). Demo accounts are not created in production.")

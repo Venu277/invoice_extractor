@@ -19,6 +19,12 @@ def create_backup(db: Session, kind: str = "manual") -> Backup:
     and the uploads directory, with a JSON manifest.
     Retains only the latest 7 backups.
     """
+    if not settings.DATABASE_URL.startswith("sqlite"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File-based database backup is available for SQLite deployments. For PostgreSQL deployments, automated backups and snapshots are managed directly by your cloud database service (e.g. Render Managed PostgreSQL or AWS RDS)."
+        )
+
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     backup_filename = f"backup_{timestamp}_{kind}.zip"
     backup_path = settings.backup_path / backup_filename
@@ -97,6 +103,12 @@ def restore_backup(db: Session, backup_id: int, current_user: User) -> None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only business owners can restore backups."
+        )
+
+    if not settings.DATABASE_URL.startswith("sqlite"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File-based database restore is available for SQLite deployments. For PostgreSQL deployments, use Point-in-Time Recovery (PITR) or pg_restore tools provided by your database provider."
         )
 
     b = db.query(Backup).filter(Backup.id == backup_id).first()

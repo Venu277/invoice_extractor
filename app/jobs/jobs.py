@@ -38,7 +38,12 @@ def job_recurring_invoices():
 
 
 def job_nightly_backup():
-    """Nightly automated database and uploads backup."""
+    """Nightly automated database and uploads backup (SQLite only)."""
+    from app.config import settings
+    if not settings.DATABASE_URL.startswith("sqlite"):
+        logger.info("Nightly backup skipped: Automated provider backups are active on PostgreSQL.")
+        return
+
     db = SessionLocal()
     try:
         backup = create_backup(db, kind="scheduled")

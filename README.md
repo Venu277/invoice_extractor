@@ -124,9 +124,55 @@ Once the server is running:
 
 ---
 
+## Production Deployment on Render
+
+Axion includes full deployment configurations for Render web services and managed PostgreSQL databases.
+
+### Automated Blueprint (`render.yaml`)
+
+Deploy automatically via the Render Blueprint:
+1. Connect your GitHub repository to Render.
+2. Select **New** -> **Blueprint** in Render Dashboard.
+3. Select your repository. Render reads `render.yaml` and configures the web service and managed PostgreSQL database automatically.
+
+### Manual Render Setup
+
+If configuring manually in Render:
+1. **Service Type**: Web Service (Python)
+2. **Build Command**:
+   ```bash
+   pip install -r requirements.txt && alembic upgrade head
+   ```
+3. **Start Command**:
+   ```bash
+   uvicorn app.main:app --host 0.0.0.0 --port $PORT
+   ```
+4. **Health Check Path**: `/health`
+
+### Environment Variables
+
+| Variable | Description | Example / Default |
+|---|---|---|
+| `APP_ENV` | Application environment | `production` |
+| `DATABASE_URL` | Database connection string. Supports PostgreSQL and SQLite. `postgres://` or `postgresql://` URIs are normalized automatically to `postgresql+psycopg2://`. | `postgresql+psycopg2://user:password@hostname:5432/dbname` |
+| `SECRET_KEY` | 32+ character random hex or base64 string for session and JWT signing | Render auto-generates or `openssl rand -hex 32` |
+| `SEED_DEMO` | Whether to run demo seed script during deployment. Keep `false` in production. | `false` |
+| `UPLOAD_DIR` | Absolute path for stored invoice PDF files | `/var/data/uploads` or `./uploads` |
+| `COOKIE_SECURE` | Set to `true` when served over HTTPS | `true` |
+| `COOKIE_SAMESITE` | Cookie SameSite policy | `lax` |
+| `MAX_UPLOAD_SIZE_MB` | Maximum document upload size | `25` |
+
+### PostgreSQL & Storage Considerations
+
+- **Managed PostgreSQL**: SQLite files are stored on ephemeral container disks and wiped on every restart/redeploy. Connecting a Render PostgreSQL database provides persistent transaction storage.
+- **Persistent Disk for Uploads**: Invoice PDFs are stored at `UPLOAD_DIR`. To preserve uploaded files across deploys, add a Render Persistent Disk mounted at `/var/data/uploads` and set `UPLOAD_DIR=/var/data/uploads`.
+- **Database Backups**: In-app SQLite file backups are disabled gracefully when running on PostgreSQL; managed PostgreSQL instances should rely on automated database backups provided by Render.
+
+---
+
 ## Test Suite & Verification
 
-The test suite validates foundation math, security boundaries, tenant isolation, OCR degradation, GST set-off rules, collections, and UI rendering across 38 integration test cases:
+The test suite validates foundation math, security boundaries, tenant isolation, OCR degradation, GST set-off rules, collections, database migrations, and UI rendering across 39 integration test cases:
 
 ```powershell
 # Run full test suite
@@ -139,6 +185,7 @@ The test suite validates foundation math, security boundaries, tenant isolation,
 - `test_forgot_password_and_clear_workspace.py`: Password recovery flow, single-use token lifecycle, workspace clearing.
 - `test_gst_and_exports.py`: GSTR-1 B2B/B2CL/B2CS calculations, GSTR-3B tax set-off rules, Tally XML vouchers.
 - `test_frontend_smoke.py`: Asset budgets, token-based color system compliance, zero emoji enforcement.
+- `test_migrations.py`: Automated schema verification ensuring SQLAlchemy models and Alembic migrations remain strictly synchronized.
 
 ---
 

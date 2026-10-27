@@ -18,19 +18,18 @@ __pycache__/
 htmlcov/
 
 # Database files
-data/*.db
-data/*.sqlite
-data/*.sqlite3
+data/
 *.db
+*.sqlite
 *.sqlite3
 !data/.gitkeep
 
 # Uploads, Logs, and Runtime Artifacts
-logs/*
+logs/
+uploads/
+backups/
 !logs/.gitkeep
-uploads/*
 !uploads/.gitkeep
-backups/*
 !backups/.gitkeep
 output/
 outputs/
