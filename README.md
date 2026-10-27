@@ -10,7 +10,7 @@
 
 Axion reads invoice PDFs and scans, extracts the supplier, dates, GSTIN, taxes and line items, checks them against GST rules, and files them into one clean ledger. Everything else (payables and receivables, ageing, profit and loss, GSTR summaries, sales invoicing, Tally exports) runs on that verified data, so the numbers you see are the numbers on your invoices.
 
-<!-- Live demo: add your Render URL here, for example: **Live demo:** https://your-service.onrender.com -->
+**Try AXION here** https://axion-invoice-platform.onrender.com/home<!-- Live demo: add your Render URL here, for example: **Live demo:** https://your-service.onrender.com -->
 
 ## Contents
 
