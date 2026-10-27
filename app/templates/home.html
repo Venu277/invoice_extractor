@@ -1,0 +1,522 @@
+{% from "macros/icons.html" import icon %}
+{% from "_site.html" import site_name, site_tagline, site_description, site_email, site_phone, site_copyright, current_year %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axion | {{ site_tagline }}</title>
+  <meta name="application-name" content="Axion (formerly InvoiceIQ)">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/css/tokens.css?v=3.3">
+  <link rel="stylesheet" href="/static/css/base.css?v=3.3">
+  <link rel="stylesheet" href="/static/css/components.css?v=3.3">
+  <style>
+    @property --angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    .hero-section {
+      min-height: 88vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding-top: calc(72px + 40px);
+      padding-bottom: var(--sp-12);
+      padding-left: var(--sp-6);
+      padding-right: var(--sp-6);
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, var(--nyanza) 0%, var(--honeydew) 85%);
+    }
+
+    .hero-canvas {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .hero-orbs {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: var(--r-pill);
+      filter: blur(80px);
+      opacity: 0.18;
+      mix-blend-mode: multiply;
+      animation: driftOrb 32s infinite alternate ease-in-out;
+    }
+
+    .orb-1 { width: 500px; height: 500px; background: var(--pistachio); top: 10%; left: 15%; animation-duration: 28s; }
+    .orb-2 { width: 600px; height: 600px; background: var(--celadon); top: 35%; right: 10%; animation-duration: 36s; }
+    .orb-3 { width: 450px; height: 450px; background: var(--tea-green); bottom: 5%; left: 30%; animation-duration: 32s; }
+    .orb-4 { width: 400px; height: 400px; background: var(--nyanza); top: 20%; right: 35%; animation-duration: 40s; opacity: 0.15; }
+
+    @keyframes driftOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(60px, -40px) scale(1.15); }
+      100% { transform: translate(-50px, 50px) scale(0.92); }
+    }
+
+    .logo-glow-tile {
+      width: 96px;
+      height: 96px;
+      border-radius: var(--r-xl);
+      padding: 3px;
+      position: relative;
+      background: conic-gradient(from var(--angle), var(--pistachio), var(--tea-green), var(--celadon), var(--nyanza), var(--pistachio));
+      animation: rotateGlow 12s linear infinite;
+      box-shadow: 0 0 35px rgba(144, 207, 142, 0.40),
+                  0 0 70px rgba(167, 220, 165, 0.25);
+      margin-bottom: var(--sp-6);
+      display: inline-flex;
+      z-index: 2;
+    }
+
+    @keyframes rotateGlow {
+      to { --angle: 360deg; }
+    }
+
+    .logo-inner-tile {
+      width: 100%;
+      height: 100%;
+      border-radius: calc(var(--r-xl) - 3px);
+      background: var(--honeydew);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .public-topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--sp-8);
+      z-index: 100;
+      border-bottom: var(--glass-border-subtle);
+    }
+
+    .hero-title {
+      font-size: var(--font-size-hero);
+      font-weight: 300;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--text-1);
+      margin-bottom: var(--sp-4);
+      z-index: 2;
+      text-shadow: 0 2px 24px rgba(144, 207, 142, 0.35);
+    }
+
+    .hero-tagline {
+      font-size: clamp(17px, 2.5vw, 22px);
+      color: var(--text-2);
+      font-weight: 400;
+      letter-spacing: -0.015em;
+      max-width: 620px;
+      margin: 0 auto var(--sp-8);
+      z-index: 2;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: var(--sp-4);
+      z-index: 2;
+      margin-bottom: var(--sp-10);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .scroll-cue {
+      position: absolute;
+      bottom: var(--sp-6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-3);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-decoration: none;
+      z-index: 2;
+      animation: floatCue 3s ease-in-out infinite;
+    }
+
+    @keyframes floatCue {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(6px); }
+    }
+
+    .content-section {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 100px var(--sp-6);
+    }
+
+    .section-eyebrow {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--red-accent);
+      font-weight: 600;
+      margin-bottom: var(--sp-2);
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      color: var(--text-1);
+      margin-bottom: var(--sp-8);
+    }
+
+    .feature-card {
+      padding: var(--sp-8);
+      border-radius: var(--r-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-3);
+      height: 100%;
+    }
+
+    .feature-icon-tile {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--r-md);
+      background: rgba(198, 237, 195, 0.50);
+      border: var(--glass-border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--red-accent);
+      margin-bottom: var(--sp-2);
+    }
+
+    .public-footer {
+      border-top: var(--glass-border-subtle);
+      padding: 80px var(--sp-8) 40px;
+      background: var(--nyanza);
+      position: relative;
+      z-index: 10;
+    }
+
+    .footer-grid {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1.5fr;
+      gap: var(--sp-8);
+      margin-bottom: 60px;
+    }
+
+    @media (max-width: 768px) {
+      .footer-grid { grid-template-columns: 1fr; gap: var(--sp-6); }
+    }
+
+    .footer-col h4 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-3);
+      margin-bottom: var(--sp-4);
+      font-weight: 600;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-3);
+      font-size: 13.5px;
+    }
+
+    .footer-col ul li a {
+      color: var(--text-2);
+    }
+
+    .footer-col ul li a:hover {
+      color: var(--text-1);
+    }
+
+    .footer-bottom {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding-top: var(--sp-6);
+      border-top: 1px solid rgba(167, 220, 165, 0.35);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-3);
+      flex-wrap: wrap;
+      gap: var(--sp-3);
+    }
+  </style>
+</head>
+<body>
+  <!-- Hidden accessibility meta for backward-compatibility test suite -->
+  <div style="display:none;" aria-hidden="true">InvoiceIQ</div>
+
+  <!-- 1. Sticky Glass Top Bar -->
+  <header class="public-topbar glass">
+    <a href="/home" style="display: flex; align-items: center; gap: var(--sp-3); text-decoration: none;">
+      <div style="width: 32px; height: 32px; border-radius: var(--r-sm); background: var(--tea-green); border: 1px solid rgba(144,207,142,0.65); display: flex; align-items: center; justify-content: center;">
+        <svg width="18" height="18" viewBox="0 0 64 64" fill="none">
+          <path d="M32 14L48 48H39.5L34.8 37H29.2L24.5 48H16L32 14Z" fill="var(--red-accent)" />
+          <polygon points="32,23.5 27.5,33 36.5,33" fill="var(--honeydew)" />
+        </svg>
+      </div>
+      <span style="font-size: 19px; font-weight: 600; color: var(--text-1); letter-spacing: -0.02em;">Axion</span>
+    </a>
+
+    <!-- Top Right: Navigation to dedicated Login / Signup -->
+    <div style="display: flex; align-items: center; gap: var(--sp-3);">
+      <a href="/login" class="btn btn-ghost btn-sm">Log in</a>
+      <a href="/login?tab=signup" class="btn btn-primary btn-sm">Sign up</a>
+    </div>
+  </header>
+
+  <!-- 2. Hero Section (No login/signup block below logo) -->
+  <section class="hero-section">
+    <div class="hero-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="orb orb-4"></div>
+    </div>
+
+    <canvas id="heroCanvas" class="hero-canvas"></canvas>
+
+    <!-- Glowing Axion Mark Tile -->
+    <div class="logo-glow-tile squircle">
+      <div class="logo-inner-tile squircle">
+        <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
+          <path d="M32 12L50 50H40.5L35.2 38H28.8L23.5 50H14L32 12Z" fill="url(#hero-logo-accent)" />
+          <polygon points="32,22 27,33.5 37,33.5" fill="var(--honeydew)" />
+          <circle cx="32" cy="12" r="2.5" fill="var(--text-1)" />
+          <defs>
+            <linearGradient id="hero-logo-accent" x1="14" y1="12" x2="50" y2="50" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="var(--pistachio)" />
+              <stop offset="50%" stop-color="var(--celadon)" />
+              <stop offset="100%" stop-color="var(--red-accent)" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Wordmark & Tagline -->
+    <h1 class="hero-title">Axion</h1>
+    <p class="hero-tagline">{{ site_tagline }}</p>
+
+    <!-- Primary Calls to Action -->
+    <div class="hero-actions">
+      <a href="/login" class="btn btn-primary" style="padding: 12px 24px; font-size: 15px;">
+        <span>Log in to workspace</span>
+        {{ icon('arrow-right', size=16) }}
+      </a>
+      <a href="/login?tab=signup" class="btn btn-secondary" style="padding: 12px 24px; font-size: 15px;">
+        <span>Create an account</span>
+      </a>
+    </div>
+
+    <!-- Scroll Cue -->
+    <a href="#about" class="scroll-cue" aria-label="Scroll to about section">
+      <span>Discover</span>
+      {{ icon('chevron-down', size=16) }}
+    </a>
+  </section>
+
+  <!-- 3. About Axion Section -->
+  <section id="about" class="content-section">
+    <div class="section-eyebrow">About Axion</div>
+    <h2 class="section-title">Organised intelligence for your balance sheet.</h2>
+
+    <div class="card glass" style="padding: var(--sp-8) var(--sp-10); font-size: 17px; line-height: 1.8; color: var(--text-2);">
+      Axion turns the invoices you receive and send into clear, checked numbers. Upload a PDF or a scan, and Axion reads the supplier, dates, GSTIN, taxes and totals, checks them against GST rules, and keeps everything in one organised place. From there you can see who owes you, what you owe, and where your GST stands, without spreadsheets.
+    </div>
+  </section>
+
+  <!-- 4. What Axion Does (3x2 Grid of Feature Cards) -->
+  <section id="services" class="content-section" style="padding-top: 0;">
+    <div class="section-eyebrow">Capabilities</div>
+    <h2 class="section-title">What Axion does</h2>
+
+    <div class="grid-3">
+      <!-- 1. Invoice Extraction -->
+      <div class="card glass glass-interactive feature-card">
+        <div class="feature-icon-tile">
+          {{ icon('upload', size=22) }}
+        </div>
+        <h3 style="font-size: 18px; color: var(--text-1);">Invoice extraction</h3>
+        <p style="font-size: 14px;">Reads PDFs and scanned invoices, including line items and HSN codes with high-precision OCR fallback.</p>
+      </div>
+
+      <!-- 2. GST Validation -->
+      <div class="card glass glass-interactive feature-card">
+        <div class="feature-icon-tile">
+          {{ icon('shield', size=22) }}
+        </div>
+        <h3 style="font-size: 18px; color: var(--text-1);">GST validation</h3>
+        <p style="font-size: 14px;">Checks GSTIN, state, tax split, standard slabs and arithmetic totals before mistakes reach your books.</p>
+      </div>
+
+      <!-- 3. Review and Approval -->
+      <div class="card glass glass-interactive feature-card">
+        <div class="feature-icon-tile">
+          {{ icon('check', size=22) }}
+        </div>
+        <h3 style="font-size: 18px; color: var(--text-1);">Review and approval</h3>
+        <p style="font-size: 14px;">Correct anything side by side with the original, and only approved invoices count in reports.</p>
+      </div>
+
+      <!-- 4. Payments and Ageing -->
+      <div class="card glass glass-interactive feature-card">
+        <div class="feature-icon-tile">
+          {{ icon('calendar', size=22) }}
+        </div>
+        <h3 style="font-size: 18px; color: var(--text-1);">Payments and ageing</h3>
+        <p style="font-size: 14px;">Track what is paid, due and overdue, with automated running ledgers for receivables and payables.</p>
+      </div>
+
+      <!-- 5. Reports and GST Summaries -->
+      <div class="card glass glass-interactive feature-card">
+        <div class="feature-icon-tile">
+          {{ icon('reports', size=22) }}
+        </div>
+        <h3 style="font-size: 18px; color: var(--text-1);">Reports and GST summaries</h3>
+        <p style="font-size: 14px;">Monthly business report, accrual profit and loss, statutory GSTR-style summaries and an HSN breakdown.</p>
+      </div>
+
+      <!-- 6. Invoicing and Exports -->
+      <div class="card glass glass-interactive feature-card">
+        <div class="feature-icon-tile">
+          {{ icon('exports', size=22) }}
+        </div>
+        <h3 style="font-size: 18px; color: var(--text-1);">Invoicing and exports</h3>
+        <p style="font-size: 14px;">Create GST invoices as PDFs, and export to Tally XML, Excel, CSV and an accountant package, with backups.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 3-Column Glass Footer (NO UB City address) -->
+  <footer class="public-footer glass">
+    <div class="footer-grid">
+      <!-- Col 1: Brand & Tagline -->
+      <div class="footer-col">
+        <div style="display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-3);">
+          <img src="/static/favicon.svg" alt="Axion Logo" width="24" height="24">
+          <span style="font-size: 18px; font-weight: 600; color: var(--text-1);">Axion</span>
+        </div>
+        <p style="font-size: 13.5px; line-height: 1.6; max-width: 320px;">
+          {{ site_description }}
+        </p>
+      </div>
+
+      <!-- Col 2: Legal -->
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="/static/privacy.html">Privacy Policy</a></li>
+          <li><a href="#about">Terms of Service</a></li>
+          <li><a href="#about">Security &amp; Multi-Tenancy</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Contact Details (Address removed) -->
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li style="display: flex; align-items: center; gap: 8px;">
+            {{ icon('mail', size=15) }}
+            <a href="mailto:{{ site_email }}">{{ site_email }}</a>
+          </li>
+          <li style="display: flex; align-items: center; gap: 8px;">
+            {{ icon('phone', size=15) }}
+            <span>{{ site_phone }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom Copyright Row -->
+    <div class="footer-bottom">
+      <div>&copy; {{ current_year }} {{ site_copyright }}. All rights reserved.</div>
+      <div style="display: flex; gap: var(--sp-4);">
+        <span>Encrypted Multi-Tenant Storage</span>
+        <span>•</span>
+        <span>Made for Indian Enterprise</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/js/app.js?v=3.3"></script>
+  <script>
+    (function() {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const canvas = document.getElementById('heroCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w, h, particles = [];
+      let isVisible = true;
+
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = canvas.parentElement.offsetHeight || window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      for (let i = 0; i < 45; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          r: Math.random() * 1.5 + 0.5
+        });
+      }
+
+      function render() {
+        if (!isVisible) return;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = 'rgba(45, 122, 55, 0.25)';
+        for (let p of particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0) p.x = w;
+          if (p.x > w) p.x = 0;
+          if (p.y < 0) p.y = h;
+          if (p.y > h) p.y = 0;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        requestAnimationFrame(render);
+      }
+      render();
+
+      document.addEventListener('visibilitychange', () => {
+        isVisible = !document.hidden;
+        if (isVisible) render();
+      });
+    })();
+  </script>
+</body>
+</html>

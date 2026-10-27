@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- 1. Header with Live Indian Calendar & Period Filter -->
+<div class="page-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: var(--sp-3); margin-bottom: 6px; flex-wrap: wrap;">
+      <h1 class="page-title" style="margin: 0;">Dashboard</h1>
+      <!-- Live Indian Calendar Badge -->
+      <div class="chip chip-info" style="font-size: 13px; padding: 5px 12px; gap: 7px; background: rgba(228, 253, 225, 0.75); border: 1px solid rgba(144, 207, 142, 0.65);">
+        {{ icon('calendar', size=14) }}
+        <span id="liveIndianDateText" style="font-weight: 500; color: var(--text-1);">Live Indian Calendar</span>
+      </div>
+    </div>
+    <p style="font-size: var(--font-size-sm); color: var(--text-3); margin-top: 2px;">
+      Financial overview, GST liability, and business intelligence for {{ selected_month or "All Time" }}.
+    </p>
+  </div>
+  <div class="page-actions">
+    <form method="GET" action="/dashboard" style="display: flex; align-items: center; gap: var(--sp-2);">
+      <input type="month" name="month" value="{{ selected_month or '' }}" aria-label="Select Financial Month" style="width: 175px;">
+      <button type="submit" class="btn btn-primary btn-sm">
+        {{ icon('filter', size=15) }}
+        <span>Apply</span>
+      </button>
+      {% if selected_month %}
+      <a href="/dashboard" class="btn btn-ghost btn-sm" title="Clear filter">
+        {{ icon('close', size=15) }}
+      </a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- 2. Row of Four Stat Cards -->
+<div class="grid-4" style="margin-bottom: var(--sp-6);">
+  <!-- Sales Revenue Card -->
+  <div class="card glass glass-interactive stat-card">
+    <div class="stat-label">
+      <span>Sales Revenue</span>
+      {{ icon('reports', size=16, class='text-muted') }}
+    </div>
+    <div class="stat-value tabular">{{ format_inr(dash.sales_total) }}</div>
+    <div class="stat-caption">
+      {% if dash.mom_change_pct >= 0 %}
+        <span class="chip chip-ok" style="padding: 2px 6px; font-size: 11px;">
+          {{ icon('check', size=12) }} +{{ dash.mom_change_pct }}%
+        </span>
+      {% else %}
+        <span class="chip chip-bad" style="padding: 2px 6px; font-size: 11px;">
+          {{ dash.mom_change_pct }}%
+        </span>
+      {% endif %}
+      <span style="color: var(--text-3); font-size: 12px;">vs previous month</span>
+    </div>
+  </div>
+
+  <!-- Purchases & Expenses Card -->
+  <div class="card glass glass-interactive stat-card">
+    <div class="stat-label">
+      <span>Purchases &amp; Expenses</span>
+      {{ icon('invoices', size=16, class='text-muted') }}
+    </div>
+    <div class="stat-value tabular">{{ format_inr(dash.purchase_total) }}</div>
+    <div class="stat-caption">
+      <span style="color: var(--text-2); font-size: 12px;">Approved inward vendor bills</span>
+    </div>
+  </div>
+
+  <!-- Net GST Liability Card -->
+  <div class="card glass glass-interactive stat-card">
+    {% set net_gst = dash.output_gst - dash.input_gst %}
+    <div class="stat-label">
+      <span>Net GST Liability</span>
+      {{ icon('shield', size=16, class='text-muted') }}
+    </div>
+    <div class="stat-value tabular" style="color: {% if net_gst > 0 %}var(--bad){% else %}var(--ok){% endif %};">
+      {{ format_inr(net_gst) }}
+    </div>
+    <div class="stat-caption">
+      <span style="color: var(--text-3); font-size: 12px;">Output ({{ format_inr(dash.output_gst) }}) - ITC ({{ format_inr(dash.input_gst) }})</span>
+    </div>
+  </div>
+
+  <!-- Pending Reviews Card -->
+  <div class="card glass glass-interactive stat-card">
+    <div class="stat-label">
+      <span>Pending Reviews</span>
+      {{ icon('alert', size=16, class='text-muted') }}
+    </div>
+    <div class="stat-value tabular" style="color: {% if dash.pending_review_count > 0 %}var(--warn){% else %}var(--text-1){% endif %};">
+      {{ dash.pending_review_count }}
+    </div>
+    <div class="stat-caption">
+      {% if dash.pending_review_count > 0 %}
+        <a href="/invoices?status=pending_review" style="font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+          <span>Review pending queue</span>
+          {{ icon('arrow-right', size=13) }}
+        </a>
+      {% else %}
+        <span style="color: var(--ok); font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+          {{ icon('check', size=13) }} All invoices reviewed
+        </span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- 3. Row of Two Wide Cards: Outstanding Receivables & Payables with Ageing Bar -->
+<div class="grid-2" style="margin-bottom: var(--sp-6);">
+  <!-- Outstanding Receivables Wide Card -->
+  <div class="card glass glass-interactive" style="padding: var(--sp-6);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-2);">
+      <div>
+        <div class="stat-label">Outstanding Receivables</div>
+        <div class="stat-value tabular" style="color: var(--ok); font-size: 30px;">
+          {{ format_inr(dash.receivables_outstanding) }}
+        </div>
+      </div>
+      <a href="/reports" class="btn btn-ghost btn-sm">
+        <span>View ageing</span>
+        {{ icon('arrow-right', size=14) }}
+      </a>
+    </div>
+    <div class="stat-caption" style="margin-bottom: var(--sp-3);">
+      Unpaid &amp; partial sales invoices from customers
+    </div>
+
+    <!-- Stacked Ageing Bar -->
+    <div class="ageing-bar">
+      {% if dash.receivables_outstanding > 0 %}
+        <div class="ageing-seg ageing-seg-not-due" style="width: 50%;" title="Current / Not Due"></div>
+        <div class="ageing-seg ageing-seg-1-30" style="width: 25%;" title="1-30 Days Overdue"></div>
+        <div class="ageing-seg ageing-seg-31-60" style="width: 15%;" title="31-60 Days Overdue"></div>
+        <div class="ageing-seg ageing-seg-90-plus" style="width: 10%;" title="90+ Days Overdue"></div>
+      {% else %}
+        <div class="ageing-seg ageing-seg-not-due" style="width: 100%;"></div>
+      {% endif %}
+    </div>
+    <div class="ageing-legend">
+      <span class="ageing-legend-item"><span class="legend-dot" style="background: var(--ok);"></span> Not Due</span>
+      <span class="ageing-legend-item"><span class="legend-dot" style="background: color-mix(in srgb, var(--ok) 60%, var(--warn));"></span> 1-30d</span>
+      <span class="ageing-legend-item"><span class="legend-dot" style="background: var(--warn);"></span> 31-60d</span>
+      <span class="ageing-legend-item"><span class="legend-dot" style="background: var(--bad);"></span> 90d+</span>
+    </div>
+  </div>
+
+  <!-- Outstanding Payables Wide Card -->
+  <div class="card glass glass-interactive" style="padding: var(--sp-6);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-2);">
+      <div>
+        <div class="stat-label">Outstanding Payables</div>
+        <div class="stat-value tabular" style="color: var(--bad); font-size: 30px;">
+          {{ format_inr(dash.payables_outstanding) }}
+        </div>
+      </div>
+      <a href="/reports" class="btn btn-ghost btn-sm">
+        <span>View ageing</span>
+        {{ icon('arrow-right', size=14) }}
+      </a>
+    </div>
+    <div class="stat-caption" style="margin-bottom: var(--sp-3);">
+      Pending bills and expenses owed to vendors
+    </div>
+
+    <!-- Stacked Ageing Bar -->
+    <div class="ageing-bar">
+      {% if dash.payables_outstanding > 0 %}
+        <div class="ageing-seg ageing-seg-not-due" style="width: 40%;" title="Not Due"></div>
+        <div class="ageing-seg ageing-seg-1-30" style="width: 30%;" title="1-30 Days"></div>
+        <div class="ageing-seg ageing-seg-61-90" style="width: 20%;" title="61-90 Days"></div>
+        <div class="ageing-seg ageing-seg-90-plus" style="width: 10%;" title="90+ Days"></div>
+      {% else %}
+        <div class="ageing-seg ageing-seg-not-due" style="width: 100%;"></div>
+      {% endif %}
+    </div>
+    <div class="ageing-legend">
+      <span class="ageing-legend-item"><span class="legend-dot" style="background: var(--ok);"></span> Current</span>
+      <span class="ageing-legend-item"><span class="legend-dot" style="background: color-mix(in srgb, var(--ok) 60%, var(--warn));"></span> 1-30d</span>
+      <span class="ageing-legend-item"><span class="legend-dot" style="background: var(--warn);"></span> 31-60d</span>
+      <span class="ageing-legend-item"><span class="legend-dot" style="background: var(--bad);"></span> 90d+</span>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Business Insights Panel (Full Width, Replaces Alerts & Vendor/Customer Charts) -->
+<div class="card glass" style="margin-bottom: var(--sp-6);">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4);">
+    <h2 style="font-size: var(--font-size-h3); display: flex; align-items: center; gap: var(--sp-2); margin: 0;">
+      {{ icon('info', size=18) }}
+      <span>Business Intelligence &amp; Accrual Insights</span>
+    </h2>
+    <a href="/reports" class="btn btn-ghost btn-sm">
+      <span>View Reports &amp; GST</span>
+      {{ icon('arrow-right', size=13) }}
+    </a>
+  </div>
+
+  {% if dash.insights and dash.insights|length > 0 %}
+    <div class="grid-2" style="gap: var(--sp-3);">
+      {% for ins in dash.insights %}
+        <div class="alert-box alert-info" style="margin-bottom: 0; padding: 14px 16px;">
+          {{ icon('check', size=16, class='text-muted') }}
+          <span style="font-size: 13.5px; color: var(--text-1);">{{ ins }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state" style="padding: var(--sp-6);">
+      <div class="empty-state-icon">
+        {{ icon('info', size=24) }}
+      </div>
+      <h3>Operational Metrics Balanced</h3>
+      <p>Financial parameters, statutory ratios, and tax liabilities are healthy and within standard thresholds.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Live Indian Calendar (IST) Date Formatter
+  try {
+    const now = new Date();
+    const options = {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'Asia/Kolkata'
+    };
+    const indianDateStr = new Intl.DateTimeFormat('en-IN', options).format(now);
+
+    // Calculate Indian Financial Year (starts 1st April)
+    const month = now.getMonth(); // 0 is January, 3 is April
+    const fullYear = now.getFullYear();
+    const fyStart = month >= 3 ? fullYear : fullYear - 1;
+    const fyEnd = (fyStart + 1).toString().slice(-2);
+    const fyLabel = `FY ${fyStart}-${fyEnd}`;
+
+    const dateElem = document.getElementById('liveIndianDateText');
+    if (dateElem) {
+      dateElem.textContent = `${indianDateStr} • ${fyLabel}`;
+    }
+  } catch (e) {
+    console.error('Failed to format Indian calendar date', e);
+  }
+});
+</script>
+{% endblock %}

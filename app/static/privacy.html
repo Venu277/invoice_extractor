@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axion | Privacy Policy</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/css/tokens.css?v=3.2">
+  <link rel="stylesheet" href="/static/css/base.css?v=3.2">
+  <link rel="stylesheet" href="/static/css/components.css?v=3.2">
+  <style>
+    .policy-container {
+      max-width: 780px;
+      margin: 60px auto;
+      padding: 0 var(--sp-6);
+    }
+    .policy-card {
+      padding: var(--sp-10) var(--sp-8);
+      margin-top: var(--sp-6);
+    }
+    .policy-card h2 {
+      margin-top: var(--sp-6);
+      margin-bottom: var(--sp-2);
+      color: var(--text-1);
+    }
+    .policy-card p, .policy-card ul {
+      margin-bottom: var(--sp-4);
+      color: var(--text-2);
+      line-height: 1.7;
+    }
+    .policy-card ul {
+      margin-left: var(--sp-6);
+    }
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--sp-4) var(--sp-6);
+    }
+  </style>
+</head>
+<body>
+  <header class="top-nav glass" style="margin: var(--sp-4); border-radius: var(--r-lg);">
+    <a href="/login" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+      <img src="/static/favicon.svg" alt="Axion Logo" width="28" height="28">
+      <span style="font-size: 18px; font-weight: 600; color: var(--text-1); letter-spacing: -0.02em;">Axion</span>
+    </a>
+    <a href="/login" class="btn btn-ghost btn-sm">Back to App</a>
+  </header>
+
+  <main class="policy-container">
+    <div style="text-align: center;">
+      <h1 style="font-size: 36px; margin-bottom: 8px;">Privacy Policy</h1>
+      <p style="color: var(--text-3); font-size: 14px;">Effective Date: October 27, 2026</p>
+    </div>
+
+    <article class="card glass policy-card">
+      <h2>1. Introduction</h2>
+      <p>
+        Axion ("we", "our", or "us") provides an intelligent invoice extraction, statutory GST validation, and financial reconciliation platform designed for Indian businesses. We respect your privacy and are committed to protecting the confidential accounting and tax records you entrust to us.
+      </p>
+
+      <h2>2. Information We Collect</h2>
+      <p>When you use Axion, we collect:</p>
+      <ul>
+        <li><strong>Account Information:</strong> Name, business name, registered email address, and encrypted authentication credentials.</li>
+        <li><strong>Business & Tax Profile:</strong> GSTIN, registered address, banking information (account number, IFSC), and UPI ID.</li>
+        <li><strong>Invoice Documents & Extracted Data:</strong> Uploaded invoice PDFs and image scans, vendor names, invoice numbers, line item descriptions, HSN/SAC codes, and GST tax calculations.</li>
+      </ul>
+
+      <h2>3. How We Use Your Information</h2>
+      <p>Your data is used solely to provide invoice processing and accounting features:</p>
+      <ul>
+        <li>To run OCR extraction pipelines and statutory GST validation checks.</li>
+        <li>To compute GSTR-1, GSTR-3B summaries, accrual Profit & Loss, and receivables ageing.</li>
+        <li>To generate balanced Tally Prime XML vouchers and formatted accounting registers.</li>
+        <li>To maintain tenant isolation and data security. We do not sell or rent your financial data to third parties.</li>
+      </ul>
+
+      <h2>4. Storage, Security & Isolation</h2>
+      <p>
+        Axion uses strict multi-tenant isolation. All queries and database records are isolated by tenant identifier. Passwords are cryptographically hashed using Argon2id. Automated backups are stored locally in encrypted directories.
+      </p>
+
+      <h2>5. Your Rights</h2>
+      <p>
+        As a business owner, you have full ownership of your data. You may export your entire transaction register at any time in Excel, CSV, or Tally format, request complete business account deletion, or download nightly database backups from your Settings page.
+      </p>
+
+      <h2>6. Contact Us</h2>
+      <p>
+        If you have questions regarding this Privacy Policy, please contact our privacy compliance team at <strong>hello@axion.example</strong>.
+      </p>
+
+      <div style="margin-top: var(--sp-8); padding-top: var(--sp-4); border-top: 1px solid rgba(167, 220, 165, 0.35); font-size: 12px; color: var(--text-3);">
+        Notice: This starter policy text is provided for workspace deployment and must be reviewed and customized by legal counsel prior to commercial launch.
+      </div>
+    </article>
+  </main>
+</body>
+</html>

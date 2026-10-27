@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}Review Invoice {{ invoice.invoice_no }}{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom: var(--sp-4);">
+  <div>
+    <a href="/invoices" class="btn btn-ghost btn-sm" style="margin-bottom: var(--sp-2);">
+      {{ icon('chevron-left', size=14) }}
+      <span>Back to Invoices</span>
+    </a>
+    <h1 class="page-title">Review Invoice: {{ invoice.invoice_no }}</h1>
+  </div>
+  <div class="page-actions">
+    {% if user and user.role in ['owner', 'accountant'] %}
+      <button onclick="approveInvoice()" class="btn btn-primary btn-sm">
+        {{ icon('check', size=15) }}
+        <span>Approve Invoice</span>
+      </button>
+      <button onclick="rejectInvoice()" class="btn btn-danger btn-sm">
+        {{ icon('close', size=15) }}
+        <span>Reject</span>
+      </button>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Validation Status Banner -->
+<div id="validationBanner" class="alert-box alert-{% if invoice.validation_status == 'ok' %}success{% elif invoice.validation_status == 'warnings' %}warning{% else %}danger{% endif %}" style="margin-bottom: var(--sp-5);">
+  {{ icon('alert' if invoice.validation_status != 'ok' else 'check', size=18) }}
+  <div style="flex: 1;">
+    <div style="font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">
+      Validation Status: {{ invoice.validation_status }}
+    </div>
+    <ul id="issueList" style="margin-left: var(--sp-5); margin-top: 6px; font-size: 13px;">
+      {% if invoice.validation_issues %}
+        {% for iss in invoice.validation_issues %}
+          <li>[{{ iss.severity|upper }}] {{ iss.message }}</li>
+        {% endfor %}
+      {% else %}
+        <li>All statutory GST rules, rate slabs, and arithmetic totals passed cleanly.</li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+
+<!-- Side-by-Side Liquid Glass Review Pane -->
+<div class="review-split">
+  <!-- Left: PDF Viewer Pane -->
+  <div class="pdf-viewer-pane">
+    {% if invoice.document_id %}
+      <iframe src="/api/v1/documents/{{ invoice.document_id }}/file#toolbar=0" title="Invoice PDF Document"></iframe>
+    {% else %}
+      <div class="empty-state" style="height: 100%;">
+        <div class="empty-state-icon">
+          {{ icon('invoices', size=32) }}
+        </div>
+        <h3>No Attached PDF</h3>
+        <p>This invoice was generated manually from the sales invoice module.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Right: Editable Form -->
+  <div class="card glass" style="overflow-y: auto; max-height: calc(100vh - 200px);">
+    <form id="reviewForm" onsubmit="saveAndValidate(event)">
+      <h2 style="margin-bottom: var(--sp-5); font-size: var(--font-size-h3); color: var(--text-1); border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: var(--sp-2);">
+        Header &amp; Statutory Details
+      </h2>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="f_direction">Transaction Direction</label>
+          <select id="f_direction" name="direction">
+            <option value="purchase" {% if invoice.direction == 'purchase' or invoice.direction == 'unknown' %}selected{% endif %}>Purchase (Inward / Expense)</option>
+            <option value="sales" {% if invoice.direction == 'sales' %}selected{% endif %}>Sales (Outward / Revenue)</option>
+          </select>
+          {% if invoice.direction == 'unknown' %}
+          <small style="color: var(--warn); font-size: 11px;">* Auto-defaulted to Purchase (Vendor Inward Bill).</small>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="f_invoice_no">Invoice Number</label>
+          <input type="text" id="f_invoice_no" name="invoice_no" value="{{ invoice.invoice_no }}" required>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="f_invoice_date">Invoice Date</label>
+          <input type="date" id="f_invoice_date" name="invoice_date" value="{{ invoice.invoice_date.strftime('%Y-%m-%d') if invoice.invoice_date else '' }}">
+        </div>
+
+        <div class="form-group">
+          <label for="f_due_date">Payment Due Date</label>
+          <input type="date" id="f_due_date" name="due_date" value="{{ invoice.due_date.strftime('%Y-%m-%d') if invoice.due_date else '' }}">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="f_supplier_gstin">Supplier GSTIN</label>
+          <input type="text" id="f_supplier_gstin" name="supplier_gstin" value="{{ invoice.supplier_gstin or '' }}" maxlength="15">
+        </div>
+
+        <div class="form-group">
+          <label for="f_buyer_gstin">Buyer GSTIN</label>
+          <input type="text" id="f_buyer_gstin" name="buyer_gstin" value="{{ invoice.buyer_gstin or '' }}" maxlength="15">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="f_pos">Place of Supply State</label>
+          <input type="text" id="f_pos" name="place_of_supply_state" value="{{ invoice.place_of_supply_state or '' }}" maxlength="2" placeholder="e.g. 29">
+        </div>
+
+        <div class="form-group">
+          <label for="f_taxable">Taxable Amount (Rs.)</label>
+          <input type="number" step="0.01" id="f_taxable" name="taxable" value="{{ '%.2f' % (invoice.taxable / 100) }}">
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="form-group">
+          <label for="f_cgst">CGST (Rs.)</label>
+          <input type="number" step="0.01" id="f_cgst" name="cgst" value="{{ '%.2f' % (invoice.cgst / 100) }}">
+        </div>
+
+        <div class="form-group">
+          <label for="f_sgst">SGST (Rs.)</label>
+          <input type="number" step="0.01" id="f_sgst" name="sgst" value="{{ '%.2f' % (invoice.sgst / 100) }}">
+        </div>
+
+        <div class="form-group">
+          <label for="f_igst">IGST (Rs.)</label>
+          <input type="number" step="0.01" id="f_igst" name="igst" value="{{ '%.2f' % (invoice.igst / 100) }}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="f_total">Grand Total (Rs.)</label>
+        <input type="number" step="0.01" id="f_total" name="total" value="{{ '%.2f' % (invoice.total / 100) }}" required style="font-size: 16px; font-weight: 600; color: var(--text-1);">
+      </div>
+
+      <button type="submit" class="btn btn-glass" style="width: 100%; margin-top: var(--sp-3);">
+        {{ icon('check', size=15) }}
+        <span>Save Changes &amp; Re-validate</span>
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const invId = {{ invoice.id }};
+
+async function saveFormData() {
+  const payload = {
+    direction: document.getElementById('f_direction').value,
+    invoice_no: document.getElementById('f_invoice_no').value,
+    invoice_date: document.getElementById('f_invoice_date').value || null,
+    due_date: document.getElementById('f_due_date').value || null,
+    supplier_gstin: document.getElementById('f_supplier_gstin').value || null,
+    buyer_gstin: document.getElementById('f_buyer_gstin').value || null,
+    place_of_supply_state: document.getElementById('f_pos').value || null,
+    taxable: Math.round(parseFloat(document.getElementById('f_taxable').value || 0) * 100),
+    cgst: Math.round(parseFloat(document.getElementById('f_cgst').value || 0) * 100),
+    sgst: Math.round(parseFloat(document.getElementById('f_sgst').value || 0) * 100),
+    igst: Math.round(parseFloat(document.getElementById('f_igst').value || 0) * 100),
+    total: Math.round(parseFloat(document.getElementById('f_total').value || 0) * 100)
+  };
+
+  const res = await fetch(`/api/v1/invoices/${invId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Save failed');
+  return await res.json();
+}
+
+async function saveAndValidate(e) {
+  if (e) e.preventDefault();
+
+  try {
+    const updated = await saveFormData();
+
+    // Update banner UI instantly
+    const banner = document.getElementById('validationBanner');
+    banner.className = 'alert-box alert-' + (updated.validation_status === 'ok' ? 'success' : (updated.validation_status === 'warnings' ? 'warning' : 'danger'));
+
+    const list = document.getElementById('issueList');
+    list.innerHTML = '';
+    if (updated.validation_issues && updated.validation_issues.length) {
+      updated.validation_issues.forEach(iss => {
+        const li = document.createElement('li');
+        li.innerText = `[${iss.severity.toUpperCase()}] ${iss.message}`;
+        list.appendChild(li);
+      });
+    } else {
+      list.innerHTML = '<li>All statutory checks and arithmetic totals passed.</li>';
+    }
+    alert('Invoice updated and re-validated successfully.');
+  } catch (err) {
+    alert('Error updating invoice: ' + err.message);
+  }
+}
+
+async function approveInvoice() {
+  const direction = document.getElementById('f_direction').value;
+  if (!confirm(`Approve this invoice as a ${direction.toUpperCase()} invoice? It will immediately reflect in Reports, GST summaries, and Exports.`)) return;
+
+  try {
+    await saveFormData();
+    const res = await fetch(`/api/v1/invoices/${invId}/approve?direction=${encodeURIComponent(direction)}`, { method: 'POST' });
+    if (res.ok) {
+      window.location.href = '/invoices';
+    } else {
+      const err = await res.json();
+      alert('Failed to approve invoice: ' + (err.detail || 'Unknown error'));
+    }
+  } catch (err) {
+    alert('Error during approval: ' + err.message);
+  }
+}
+
+async function rejectInvoice() {
+  if (!confirm('Reject this invoice?')) return;
+  try {
+    const res = await fetch(`/api/v1/invoices/${invId}/reject`, { method: 'POST' });
+    if (res.ok) {
+      window.location.href = '/invoices';
+    } else {
+      alert('Failed to reject invoice.');
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+</script>
+{% endblock %}

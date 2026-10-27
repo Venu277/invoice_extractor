@@ -1,0 +1,142 @@
+/* Axion Base Styles & CSS Reset
+   Clean Apple-inspired baseline, light mode ambient glows, typography & accessibility.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  color-scheme: light;
+  font-family: var(--font-family);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-1);
+  background-color: var(--black);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-numeric: tabular-nums;
+  scroll-behavior: smooth;
+}
+
+body {
+  color-scheme: light;
+  min-height: 100vh;
+  background-color: var(--black);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% -10%, color-mix(in srgb, var(--tea-green) 50%, transparent), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 85% 100%, color-mix(in srgb, var(--celadon) 40%, transparent), transparent 70%),
+    linear-gradient(to bottom, var(--black), var(--maroon-3));
+  background-attachment: fixed;
+  color: var(--text-1);
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Squircles continuous corner support */
+@supports (corner-shape: squircle) {
+  .squircle,
+  .card,
+  .btn,
+  .input,
+  .select,
+  .chip,
+  .modal,
+  .drop-zone {
+    corner-shape: squircle;
+  }
+}
+
+/* Typography Hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-1);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+h1 { font-size: var(--font-size-h1); font-weight: 600; }
+h2 { font-size: var(--font-size-h2); }
+h3 { font-size: var(--font-size-h3); }
+
+p {
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+small, .caption {
+  font-size: var(--font-size-caption);
+  color: var(--text-3);
+}
+
+a {
+  color: var(--red-accent);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-apple);
+}
+
+a:hover {
+  color: var(--red-accent-hover);
+}
+
+/* Accessibility: Focus Rings */
+:focus-visible {
+  outline: 2px solid var(--red-accent);
+  outline-offset: 3px;
+  box-shadow: 0 0 16px rgba(144, 207, 142, 0.50);
+}
+
+/* Tabular figures for all money & numbers */
+.num, .amount, .tabular {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Form Controls & Pickers: Force Light Rendering */
+input, select, textarea, button {
+  color-scheme: light;
+  font-family: inherit;
+}
+
+/* Custom Light Frosted Glass Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--maroon-3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--maroon-1);
+  border-radius: var(--r-sm);
+  border: 2px solid var(--maroon-3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--red-900);
+}
+
+/* High Contrast & Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: var(--maroon-2) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}

@@ -1,0 +1,186 @@
+{% from "macros/icons.html" import icon %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axion | {% block title %}Workspace{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/css/tokens.css?v=3.2">
+  <link rel="stylesheet" href="/static/css/base.css?v=3.2">
+  <link rel="stylesheet" href="/static/css/components.css?v=3.2">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Prevent layout shift on first paint if user preferred collapsed rail -->
+  <script>
+    (function() {
+      try {
+        if (localStorage.getItem('axion_sidebar') === 'collapsed' && window.innerWidth >= 900) {
+          document.documentElement.classList.add('sidebar-init-collapsed');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    .sidebar-init-collapsed #appSidebar { width: var(--sidebar-w-collapsed); }
+    .sidebar-init-collapsed #appSidebar .brand-text,
+    .sidebar-init-collapsed #appSidebar .nav-group-title,
+    .sidebar-init-collapsed #appSidebar .nav-label,
+    .sidebar-init-collapsed #appSidebar .user-meta,
+    .sidebar-init-collapsed #appSidebar .logout-label { display: none; }
+    .sidebar-init-collapsed #appSidebar .sidebar-header { justify-content: center; }
+    .sidebar-init-collapsed #appSidebar .brand-block { display: none; }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <!-- Mobile Scrim Backdrop (< 900px) -->
+  <div id="sidebarScrim" class="sidebar-scrim"></div>
+
+  <div class="app-container">
+    <!-- Collapsible Liquid Glass Sidebar with Red/Maroon Glow -->
+    <aside id="appSidebar" class="sidebar" aria-label="Application Navigation">
+      <!-- Brand & Single Collapse Toggle Button -->
+      <div class="sidebar-header">
+        <a href="/dashboard" class="brand-block">
+          <div class="brand-mark">
+            <svg width="20" height="20" viewBox="0 0 64 64" fill="none">
+              <path d="M32 14L48 48H39.5L34.8 37H29.2L24.5 48H16L32 14Z" fill="url(#brand-accent)" />
+              <polygon points="32,23.5 27.5,33 36.5,33" fill="var(--maroon-3)" />
+              <circle cx="32" cy="14" r="2" fill="var(--text-1)" />
+              <defs>
+                <linearGradient id="brand-accent" x1="16" y1="12" x2="48" y2="52" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="var(--bad)" />
+                  <stop offset="50%" stop-color="var(--red-500)" />
+                  <stop offset="100%" stop-color="var(--red-800)" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="brand-title">Axion</span>
+            <span class="brand-subtitle">{{ user.business.name if user and user.business else "Workspace" }}</span>
+          </div>
+        </a>
+
+        <!-- The one and only sidebar collapse toggle on desktop -->
+        <button id="sidebarToggle" class="sidebar-toggle-btn" aria-label="Toggle navigation sidebar" aria-expanded="true">
+          {{ icon('panel-toggle', size=18) }}
+        </button>
+      </div>
+
+      <!-- Navigation Groups -->
+      <nav class="sidebar-nav">
+        <!-- Overview Group -->
+        <div>
+          <div class="nav-group-title">Overview</div>
+          <a href="/dashboard" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}" data-tooltip="Dashboard">
+            <span class="nav-icon">{{ icon('dashboard') }}</span>
+            <span class="nav-label">Dashboard</span>
+          </a>
+        </div>
+
+        <!-- Invoices Group -->
+        <div>
+          <div class="nav-group-title">Invoices</div>
+          <a href="/upload" class="nav-item {% if active_page == 'upload' %}active{% endif %}" data-tooltip="Upload Invoices">
+            <span class="nav-icon">{{ icon('upload') }}</span>
+            <span class="nav-label">Upload Invoices</span>
+          </a>
+          <a href="/invoices" class="nav-item {% if active_page == 'invoices' %}active{% endif %}" data-tooltip="Invoices Register">
+            <span class="nav-icon">{{ icon('invoices') }}</span>
+            <span class="nav-label">Invoices</span>
+          </a>
+          {% if user and user.role in ['owner', 'accountant'] %}
+          <a href="/invoices/new" class="nav-item {% if active_page == 'generator' %}active{% endif %}" data-tooltip="New Sales Invoice">
+            <span class="nav-icon">{{ icon('plus') }}</span>
+            <span class="nav-label">New Invoice</span>
+          </a>
+          {% endif %}
+        </div>
+
+        <!-- Contacts Group -->
+        <div>
+          <div class="nav-group-title">Contacts</div>
+          <a href="/parties" class="nav-item {% if active_page == 'parties' %}active{% endif %}" data-tooltip="Parties &amp; Ledgers">
+            <span class="nav-icon">{{ icon('parties') }}</span>
+            <span class="nav-label">Parties</span>
+          </a>
+        </div>
+
+        <!-- Insights Group -->
+        <div>
+          <div class="nav-group-title">Insights</div>
+          {% if user and user.role in ['owner', 'accountant'] %}
+          <a href="/reports" class="nav-item {% if active_page == 'reports' %}active{% endif %}" data-tooltip="Reports &amp; GST">
+            <span class="nav-icon">{{ icon('reports') }}</span>
+            <span class="nav-label">Reports &amp; GST</span>
+          </a>
+          <a href="/exports" class="nav-item {% if active_page == 'exports' %}active{% endif %}" data-tooltip="Exports &amp; Tally">
+            <span class="nav-icon">{{ icon('exports') }}</span>
+            <span class="nav-label">Exports &amp; Tally</span>
+          </a>
+          {% endif %}
+          <a href="/alerts" class="nav-item {% if active_page == 'alerts' %}active{% endif %}" data-tooltip="Active Alerts">
+            <span class="nav-icon">{{ icon('bell') }}</span>
+            <span class="nav-label">Alerts</span>
+          </a>
+        </div>
+
+        <!-- Admin Group -->
+        {% if user and user.role == 'owner' %}
+        <div>
+          <div class="nav-group-title">Admin</div>
+          <a href="/settings" class="nav-item {% if active_page == 'settings' %}active{% endif %}" data-tooltip="Settings &amp; Backups">
+            <span class="nav-icon">{{ icon('settings') }}</span>
+            <span class="nav-label">Settings &amp; Backups</span>
+          </a>
+        </div>
+        {% endif %}
+      </nav>
+
+      <!-- Sidebar Footer / Pinned User & Logout -->
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar">
+            {{ icon('user', size=16) }}
+          </div>
+          <div class="user-meta">
+            <span class="user-name">{{ user.name if user else "User" }}</span>
+            <span class="user-role">{{ user.role if user else "Member" }}</span>
+          </div>
+        </div>
+
+        <form action="/auth/logout" method="POST" class="logout-form">
+          <button type="submit" class="logout-btn">
+            {{ icon('logout', size=16) }}
+            <span class="logout-label">Sign out</span>
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Main Viewport -->
+    <div class="main-viewport">
+      <!-- Mobile-Only Topbar (< 900px) -->
+      <header class="mobile-topbar">
+        <button id="mobileMenuBtn" class="btn btn-ghost btn-sm btn-icon-only" aria-label="Open navigation menu">
+          {{ icon('panel-toggle', size=20) }}
+        </button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <img src="/static/favicon.svg" alt="Axion Logo" width="22" height="22">
+          <span style="font-weight: 600; font-size: 16px; color: var(--text-1);">Axion</span>
+        </div>
+        <div style="width: 32px;"></div>
+      </header>
+
+      <main class="main-content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js?v=3.2"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

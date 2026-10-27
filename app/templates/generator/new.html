@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+{% block title %}New Sales Invoice{% endblock %}
+
+{% block head %}
+<style>
+  /* Spacious and Legible Line Item Inputs */
+  #itemsTable {
+    width: 100%;
+    min-width: 720px;
+  }
+
+  #itemsTable th {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  #itemsTable td {
+    padding: 8px 10px;
+    vertical-align: middle;
+  }
+
+  #itemsTable input,
+  #itemsTable select {
+    font-size: 14.5px;
+    padding: 10px 14px;
+    min-height: 44px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: var(--r-sm);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(167, 220, 165, 0.65);
+    color: var(--text-1);
+    outline: none;
+    transition: all var(--dur-fast) var(--ease-apple);
+  }
+
+  #itemsTable input:focus,
+  #itemsTable select:focus {
+    border-color: var(--red-accent);
+    box-shadow: 0 0 0 3px rgba(144, 207, 142, 0.40);
+  }
+
+  /* Remove Native Spin-Buttons / Stepper Arrows */
+  #itemsTable input[type=number]::-webkit-inner-spin-button,
+  #itemsTable input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  #itemsTable input[type=number] {
+    -moz-appearance: textfield;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Generate Sales Invoice</h1>
+    <p style="font-size: var(--font-size-sm); color: var(--text-3); margin-top: 4px;">
+      Issue statutory GST sales invoices with automatic sequential numbering, intra/inter-state tax splitting, and printable PDF generation.
+    </p>
+  </div>
+  <div class="page-actions">
+    <a href="/invoices" class="btn btn-ghost btn-sm">
+      {{ icon('invoices', size=15) }}
+      <span>View Invoices</span>
+    </a>
+  </div>
+</div>
+
+<div class="grid-2" style="grid-template-columns: 2.2fr 1fr; align-items: start; gap: var(--sp-6);">
+  <!-- Left Column: Form & Line Items -->
+  <div class="card glass">
+    <form id="genForm" onsubmit="generateInvoice(event)">
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="gen_customer">Customer Account</label>
+          <select id="gen_customer" name="customer_id" required onchange="updatePreview()">
+            <option value="">Select Customer Account</option>
+            {% for p in customers %}
+              <option value="{{ p.id }}">{{ p.name }} (GSTIN: {{ p.gstin or 'None' }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="gen_date">Invoice Date</label>
+          <input type="date" id="gen_date" name="invoice_date" value="{{ today }}" required>
+        </div>
+      </div>
+
+      <div style="margin: var(--sp-6) 0 var(--sp-3); display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="font-size: var(--font-size-h3); color: var(--text-1); margin: 0;">Line Items</h2>
+        <button type="button" class="btn btn-glass btn-sm" onclick="addRow()">
+          {{ icon('plus', size=14) }}
+          <span>Add Item Row</span>
+        </button>
+      </div>
+
+      <div class="table-container" style="margin-bottom: var(--sp-4);">
+        <table id="itemsTable">
+          <thead>
+            <tr>
+              <th style="min-width: 260px;">Description</th>
+              <th style="width: 130px;">HSN / SAC</th>
+              <th style="width: 95px;" class="text-right">Qty (Integer)</th>
+              <th style="width: 140px;" class="text-right">Rate (Rs.)</th>
+              <th style="width: 110px;">GST %</th>
+              <th style="width: 48px;"></th>
+            </tr>
+          </thead>
+          <tbody id="itemsBody">
+            <tr>
+              <td>
+                <input type="text" class="item-desc" required placeholder="Consulting / Product description" oninput="updatePreview()">
+              </td>
+              <td>
+                <input type="text" class="item-hsn" placeholder="998311" maxlength="8">
+              </td>
+              <td>
+                <input type="number" min="1" step="1" class="item-qty text-right" value="1" required
+                       onkeydown="if(event.key === '.' || event.key === '-' || event.key === '+' || event.key === 'e' || event.key === 'E') event.preventDefault();"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1'; updatePreview();">
+              </td>
+              <td>
+                <input type="number" step="0.01" min="0" class="item-rate text-right" required placeholder="1000.00" oninput="updatePreview()">
+              </td>
+              <td>
+                <select class="item-gst" onchange="updatePreview()">
+                  <option value="18" selected>18%</option>
+                  <option value="12">12%</option>
+                  <option value="5">5%</option>
+                  <option value="28">28%</option>
+                  <option value="0">0%</option>
+                </select>
+              </td>
+              <td class="text-center">
+                <button type="button" class="btn btn-ghost btn-sm btn-icon-only" onclick="removeRow(this)" title="Remove line item" style="color: var(--bad);">
+                  {{ icon('close', size=14) }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form-group" style="margin-top: var(--sp-5);">
+        <label for="gen_notes">Terms &amp; Notes</label>
+        <textarea id="gen_notes" rows="2" placeholder="Payment due within agreed credit terms. Bank transfer or UPI accepted."></textarea>
+      </div>
+
+      <div style="margin-top: var(--sp-6);">
+        <button type="submit" id="genSubmitBtn" class="btn btn-primary" style="padding: 12px 24px;">
+          {{ icon('invoices', size=16) }}
+          <span>Generate Invoice &amp; PDF</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Right Column: Sticky Live Calculation Preview Card -->
+  <div class="card glass" style="position: sticky; top: 96px; padding: var(--sp-6);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4);">
+      <h2 style="font-size: var(--font-size-h3); color: var(--text-1); margin: 0;">Calculation Preview</h2>
+      <span class="chip chip-info" style="font-size: 11px;">Live Calculation</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: var(--sp-3); font-size: 13.5px; border-bottom: 1px solid rgba(167, 220, 165, 0.35); padding-bottom: var(--sp-4); margin-bottom: var(--sp-4);">
+      <div style="display: flex; justify-content: space-between;">
+        <span style="color: var(--text-3);">Taxable Subtotal</span>
+        <span id="prev_taxable" class="tabular" style="font-weight: 500;">Rs. 0.00</span>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span style="color: var(--text-3);">Estimated GST (Taxes)</span>
+        <span id="prev_taxes" class="tabular" style="font-weight: 500;">Rs. 0.00</span>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--sp-4);">
+      <span style="font-weight: 600; font-size: 15px; color: var(--text-1);">Total Amount Due</span>
+      <span id="prev_total" class="tabular" style="font-size: 24px; font-weight: 700; color: var(--red-accent);">Rs. 0.00</span>
+    </div>
+
+    <div style="background: rgba(228, 253, 225, 0.50); border: 1px solid rgba(167, 220, 165, 0.40); border-radius: var(--r-sm); padding: 10px 12px; font-size: 12px; color: var(--text-2); line-height: 1.5;">
+      Computed via integer paise arithmetic in client preview. Final intra/inter-state tax splitting (CGST+SGST vs IGST) is generated by server.
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function addRow() {
+  const row = `
+    <tr>
+      <td>
+        <input type="text" class="item-desc" required placeholder="Item description" oninput="updatePreview()">
+      </td>
+      <td>
+        <input type="text" class="item-hsn" placeholder="HSN/SAC" maxlength="8">
+      </td>
+      <td>
+        <input type="number" min="1" step="1" class="item-qty text-right" value="1" required
+               onkeydown="if(event.key === '.' || event.key === '-' || event.key === '+' || event.key === 'e' || event.key === 'E') event.preventDefault();"
+               oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value === '0') this.value = '1'; updatePreview();">
+      </td>
+      <td>
+        <input type="number" step="0.01" min="0" class="item-rate text-right" required placeholder="1000.00" oninput="updatePreview()">
+      </td>
+      <td>
+        <select class="item-gst" onchange="updatePreview()">
+          <option value="18" selected>18%</option>
+          <option value="12">12%</option>
+          <option value="5">5%</option>
+          <option value="28">28%</option>
+          <option value="0">0%</option>
+        </select>
+      </td>
+      <td class="text-center">
+        <button type="button" class="btn btn-ghost btn-sm btn-icon-only" onclick="removeRow(this)" style="color: var(--bad);" aria-label="Remove item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </td>
+    </tr>
+  `;
+  document.getElementById('itemsBody').insertAdjacentHTML('beforeend', row);
+  updatePreview();
+}
+
+function removeRow(btn) {
+  const tbody = document.getElementById('itemsBody');
+  if (tbody.children.length > 1) {
+    btn.closest('tr').remove();
+    updatePreview();
+  } else {
+    alert('At least one line item is required.');
+  }
+}
+
+function updatePreview() {
+  let subtotalPaise = 0;
+  let taxPaise = 0;
+
+  const rows = document.querySelectorAll('#itemsBody tr');
+  rows.forEach(r => {
+    const qty = parseInt(r.querySelector('.item-qty').value, 10) || 0;
+    const rate = parseFloat(r.querySelector('.item-rate').value || 0);
+    const gstPct = parseFloat(r.querySelector('.item-gst').value || 0);
+
+    const lineTaxablePaise = Math.round(qty * rate * 100);
+    const lineTaxPaise = Math.round(lineTaxablePaise * (gstPct / 100));
+
+    subtotalPaise += lineTaxablePaise;
+    taxPaise += lineTaxPaise;
+  });
+
+  const totalPaise = subtotalPaise + taxPaise;
+  const formatINR = (paise) => 'Rs. ' + (paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  document.getElementById('prev_taxable').innerText = formatINR(subtotalPaise);
+  document.getElementById('prev_taxes').innerText = formatINR(taxPaise);
+  document.getElementById('prev_total').innerText = formatINR(totalPaise);
+}
+
+document.addEventListener('DOMContentLoaded', updatePreview);
+
+async function generateInvoice(e) {
+  e.preventDefault();
+  const customerId = document.getElementById('gen_customer').value;
+  const invDate = document.getElementById('gen_date').value;
+  const notes = document.getElementById('gen_notes').value;
+
+  const items = [];
+  document.querySelectorAll('#itemsBody tr').forEach(r => {
+    const rawQty = parseInt(r.querySelector('.item-qty').value, 10);
+    const validQty = (!isNaN(rawQty) && rawQty > 0) ? rawQty : 1;
+    items.push({
+      description: r.querySelector('.item-desc').value,
+      hsn_sac: r.querySelector('.item-hsn').value || null,
+      quantity: validQty,
+      rate: Math.round(parseFloat(r.querySelector('.item-rate').value) * 100),
+      gst_rate: parseFloat(r.querySelector('.item-gst').value)
+    });
+  });
+
+  const payload = {
+    customer_id: parseInt(customerId),
+    invoice_date: invDate,
+    notes: notes,
+    items: items
+  };
+
+  const submitBtn = document.getElementById('genSubmitBtn');
+  submitBtn.disabled = true;
+  submitBtn.innerText = 'Generating Invoice...';
+
+  try {
+    const res = await fetch('/api/v1/generator/invoices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Generation failed');
+    }
+    const inv = await res.json();
+    window.location.href = `/invoices/${inv.id}/review`;
+  } catch (err) {
+    alert('Error: ' + err.message);
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'Generate Invoice & PDF';
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% from "macros/icons.html" import icon %}
+
+{% block title %}Alerts{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Alerts & Notifications</h1>
+    <p class="text-secondary" style="font-size: 13px; margin-top: 4px;">
+      Compliance notices, tax threshold warnings, payment due dates, and reconciliation alerts.
+    </p>
+  </div>
+  <!-- Filter tabs -->
+  <div style="display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.06);">
+    <button type="button" class="btn btn-sm btn-ghost filter-tab active" data-filter="all" onclick="filterAlerts('all', this)" style="border-radius: var(--radius-xs);">
+      <span>All</span>
+    </button>
+    <button type="button" class="btn btn-sm btn-ghost filter-tab" data-filter="unread" onclick="filterAlerts('unread', this)" style="border-radius: var(--radius-xs);">
+      <span>Unread</span>
+    </button>
+  </div>
+</div>
+
+<div id="alertsContainer" style="display: flex; flex-direction: column; gap: 12px;">
+  {% if alerts %}
+    {% for a in alerts %}
+      {% set is_crit = a.severity in ['critical', 'error'] %}
+      {% set is_warn = a.severity == 'warning' %}
+      <div class="card glass alert-item" data-read="{{ 'true' if a.is_read else 'false' }}" style="padding: 16px 20px; border-left: 3px solid {% if is_crit %}var(--bad){% elif is_warn %}var(--warn){% else %}var(--text-3){% endif %};">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
+          <div style="display: flex; align-items: flex-start; gap: 14px;">
+            <div style="margin-top: 2px; color: {% if is_crit %}var(--bad){% elif is_warn %}var(--warn){% else %}var(--text-2){% endif %};">
+              {% if is_crit %}
+                {{ icon('alert', size=20) }}
+              {% elif is_warn %}
+                {{ icon('alert', size=20) }}
+              {% else %}
+                {{ icon('info', size=20) }}
+              {% endif %}
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span class="chip" style="font-size: 11px; padding: 2px 8px; background: rgba(255,255,255,0.06); color: var(--text-2); border-color: rgba(255,255,255,0.08); font-weight: 600;">
+                  {{ a.type.upper() }}
+                </span>
+                <span class="text-tertiary" style="font-size: 12px;">
+                  {{ a.created_at.strftime('%d/%m/%Y %H:%M') }}
+                </span>
+              </div>
+              <div style="color: var(--text-1); font-size: 14px; line-height: 1.5;">
+                {{ a.message }}
+              </div>
+            </div>
+          </div>
+          <div style="flex-shrink: 0;">
+            {% if not a.is_read %}
+              <button onclick="markRead({{ a.id }}, this)" class="btn btn-secondary btn-sm" title="Mark this alert as read">
+                {{ icon('check', size=14) }}
+                <span>Mark Read</span>
+              </button>
+            {% else %}
+              <span class="chip" style="font-size: 11px; color: var(--text-3); background: transparent; border-color: rgba(255,255,255,0.06);">
+                {{ icon('check', size=12) }}
+                <span>Read</span>
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="card glass empty-state" style="padding: 48px 24px;">
+      <div class="empty-state-icon" style="color: var(--text-3); margin-bottom: 12px;">
+        {{ icon('bell', size=36) }}
+      </div>
+      <div style="font-weight: 600; color: var(--text-1); margin-bottom: 4px;">All caught up</div>
+      <p class="text-secondary" style="font-size: 13px; max-width: 320px; margin: 0 auto;">
+        No active alerts or compliance warnings for your business.
+      </p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Empty state for unread filter when no unread alerts -->
+<div id="unreadEmptyNotice" class="card glass empty-state" style="display: none; padding: 48px 24px;">
+  <div class="empty-state-icon" style="color: var(--ok); margin-bottom: 12px;">
+    {{ icon('check-circle', size=36) }}
+  </div>
+  <div style="font-weight: 600; color: var(--text-1); margin-bottom: 4px;">No unread notifications</div>
+  <p class="text-secondary" style="font-size: 13px; max-width: 320px; margin: 0 auto;">
+    All active alerts have been marked as read.
+  </p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentFilter = 'all';
+
+function filterAlerts(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  const items = document.querySelectorAll('.alert-item');
+  let visibleCount = 0;
+
+  items.forEach(item => {
+    const isRead = item.getAttribute('data-read') === 'true';
+    if (type === 'unread' && isRead) {
+      item.style.display = 'none';
+    } else {
+      item.style.display = 'block';
+      visibleCount++;
+    }
+  });
+
+  const emptyNotice = document.getElementById('unreadEmptyNotice');
+  if (emptyNotice) {
+    emptyNotice.style.display = (visibleCount === 0 && items.length > 0) ? 'block' : 'none';
+  }
+}
+
+async function markRead(alertId, btn) {
+  try {
+    const res = await fetch(`/api/v1/alerts/${alertId}/read`, { method: 'PUT' });
+    if (res.ok) {
+      const card = btn.closest('.alert-item');
+      if (card) {
+        card.setAttribute('data-read', 'true');
+      }
+      btn.outerHTML = '<span class="chip" style="font-size: 11px; color: var(--text-3); background: transparent; border-color: rgba(255,255,255,0.06);"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> <span>Read</span></span>';
+
+      if (currentFilter === 'unread' && card) {
+        card.style.display = 'none';
+        const unreadItems = document.querySelectorAll('.alert-item[data-read="false"]');
+        if (unreadItems.length === 0) {
+          const emptyNotice = document.getElementById('unreadEmptyNotice');
+          if (emptyNotice) emptyNotice.style.display = 'block';
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Failed to mark alert as read:', err);
+  }
+}
+</script>
+<style>
+.filter-tab.active {
+  background: var(--maroon-1) !important;
+  color: var(--text-1) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+</style>
+{% endblock %}

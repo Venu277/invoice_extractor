@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+{% from "macros/icons.html" import icon %}
+
+{% block title %}Settings &amp; Team{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Business Settings & Administration</h1>
+    <p class="text-secondary" style="font-size: 13px; margin-top: 4px;">
+      Manage your business profile, multi-user role permissions, and database backup snapshots.
+    </p>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-bottom: 24px; align-items: start;">
+  <!-- Business Profile Card -->
+  <div class="card glass">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+      <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--red-500) 15%, transparent); display: flex; align-items: center; justify-content: center; color: var(--red-500);">
+        {{ icon('building', size=18) }}
+      </div>
+      <div>
+        <h3 style="font-size: 16px; font-weight: 600; color: var(--text-1); margin: 0;">Business Profile</h3>
+        <span class="text-secondary" style="font-size: 12px;">Entity & banking details</span>
+      </div>
+    </div>
+
+    <form id="profileForm" onsubmit="updateProfile(event)">
+      <div class="form-group">
+        <label for="prof_name">Business Legal Name</label>
+        <input type="text" id="prof_name" class="input" value="{{ business.name }}" required>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="prof_gstin">GSTIN (15 Digits)</label>
+          <input type="text" id="prof_gstin" class="input" value="{{ business.gstin or '' }}" maxlength="15" placeholder="e.g. 27ABCDE1234F1Z5">
+        </div>
+        <div class="form-group">
+          <label for="prof_state">State Code (2 Digits)</label>
+          <input type="text" id="prof_state" class="input" value="{{ business.state_code or '' }}" maxlength="2" placeholder="e.g. 27">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="prof_address">Registered Operating Address</label>
+        <input type="text" id="prof_address" class="input" value="{{ business.address or '' }}" placeholder="Street, City, State, PIN">
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="prof_bank">Bank Name</label>
+          <input type="text" id="prof_bank" class="input" value="{{ business.bank_name or '' }}" placeholder="e.g. HDFC Bank">
+        </div>
+        <div class="form-group">
+          <label for="prof_account">Account Number</label>
+          <input type="text" id="prof_account" class="input" value="{{ business.account_no or '' }}" placeholder="Bank account number">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="prof_ifsc">IFSC Code</label>
+          <input type="text" id="prof_ifsc" class="input" value="{{ business.ifsc or '' }}" placeholder="e.g. HDFC0001234">
+        </div>
+        <div class="form-group">
+          <label for="prof_upi">UPI ID (VPA)</label>
+          <input type="text" id="prof_upi" class="input" value="{{ business.upi_id or '' }}" placeholder="business@upi">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="margin-top: 8px;">
+        {{ icon('check', size=16) }}
+        <span>Save Business Profile</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Team Management Card -->
+  <div class="card glass">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+      <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--maroon-1) 30%, transparent); display: flex; align-items: center; justify-content: center; color: var(--text-2);">
+        {{ icon('users', size=18) }}
+      </div>
+      <div>
+        <h3 style="font-size: 16px; font-weight: 600; color: var(--text-1); margin: 0;">Team Members & Roles</h3>
+        <span class="text-secondary" style="font-size: 12px;">Active collaborators</span>
+      </div>
+    </div>
+
+    <div class="table-responsive" style="margin-bottom: 24px;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in team %}
+            <tr>
+              <td style="font-weight: 600; color: var(--text-1);">{{ u.name }}</td>
+              <td class="text-secondary">{{ u.email }}</td>
+              <td>
+                {% if u.role == 'owner' %}
+                  <span class="chip chip-sales">Owner</span>
+                {% elif u.role == 'accountant' %}
+                  <span class="chip chip-ok">Accountant</span>
+                {% else %}
+                  <span class="chip" style="background: rgba(255,255,255,0.06); color: var(--text-2);">Staff</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px;">
+      <h4 style="margin: 0 0 14px 0; font-size: 14px; font-weight: 600; color: var(--text-1);">Add New Member</h4>
+      <form id="teamForm" onsubmit="addTeamMember(event)">
+        <div class="form-group">
+          <label for="tm_name">Full Name</label>
+          <input type="text" id="tm_name" class="input" required placeholder="Colleague or accountant name">
+        </div>
+        <div class="form-group">
+          <label for="tm_email">Email Address</label>
+          <input type="email" id="tm_email" class="input" required placeholder="member@company.com">
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="tm_pw">Temporary Password</label>
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" id="tm_pw" class="input" required minlength="6" placeholder="At least 6 characters" style="padding-right: 40px; width: 100%;">
+              <button type="button" class="btn-ghost" onclick="togglePasswordVisibility('tm_pw', this)" style="position: absolute; right: 8px; padding: 4px; color: var(--text-3);" aria-label="Toggle password view">
+                {{ icon('eye', size=16) }}
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="tm_role">Access Role</label>
+            <select id="tm_role" class="input">
+              <option value="accountant">Accountant (Full reports & exports)</option>
+              <option value="staff">Staff (Upload & review only)</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-secondary" style="margin-top: 6px;">
+          {{ icon('plus', size=16) }}
+          <span>Add Member</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Backups & Disaster Recovery Card -->
+<div class="card glass">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+        <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--red-700) 20%, transparent); display: flex; align-items: center; justify-content: center; color: var(--text-1);">
+          {{ icon('database', size=18) }}
+        </div>
+        <h3 style="font-size: 16px; font-weight: 600; color: var(--text-1); margin: 0;">Database Snapshots & Disaster Recovery</h3>
+      </div>
+      <p class="text-secondary" style="font-size: 13px; margin: 0;">
+        Online consistent SQLite database backups and uploads directory snapshots.
+      </p>
+    </div>
+    <button onclick="createBackup()" class="btn btn-primary btn-sm">
+      {{ icon('plus', size=14) }}
+      <span>Create Manual Backup</span>
+    </button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Backup Archive Path</th>
+          <th>Size</th>
+          <th>Kind</th>
+          <th>Timestamp</th>
+          <th style="text-align: center;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if backups %}
+          {% for b in backups %}
+            <tr>
+              <td><code style="background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: var(--radius-sm); font-size: 12px; color: var(--text-2); border: 1px solid rgba(255,255,255,0.06);">{{ b.path }}</code></td>
+              <td class="text-secondary" style="font-variant-numeric: tabular-nums;">{{ '%.1f' % (b.size_bytes / 1024) }} KB</td>
+              <td>
+                <span class="chip" style="font-size: 11px; background: rgba(255,255,255,0.06); color: var(--text-2);">
+                  {{ b.kind }}
+                </span>
+              </td>
+              <td class="text-secondary">{{ b.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+              <td style="text-align: center;">
+                <button onclick="openRestoreModal({{ b.id }}, '{{ b.path }}')" class="btn btn-secondary btn-sm" style="color: var(--bad); border-color: rgba(255, 122, 122, 0.2);">
+                  {{ icon('refresh', size=14) }}
+                  <span>Restore</span>
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="5">
+              <div class="empty-state" style="padding: 32px 16px;">
+                <div class="empty-state-icon" style="color: var(--text-3); margin-bottom: 8px;">
+                  {{ icon('database', size=32) }}
+                </div>
+                <div style="font-weight: 600; color: var(--text-1); margin-bottom: 2px;">No backups found</div>
+                <p class="text-secondary" style="font-size: 12px; margin: 0;">Click "Create Manual Backup" to create a fresh snapshot.</p>
+              </div>
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Restore Confirmation Modal -->
+<div id="restoreModal" class="modal-backdrop" style="display: none;" onclick="if(event.target===this) closeRestoreModal()">
+  <div class="modal glass" style="max-width: 480px;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="color: var(--bad);">{{ icon('alert', size=22) }}</span>
+        <h3 class="modal-title" style="color: var(--bad);">Confirm Database Restore</h3>
+      </div>
+      <button class="modal-close" onclick="closeRestoreModal()" aria-label="Close modal">
+        {{ icon('close', size=18) }}
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="color: var(--text-1); font-size: 14px; line-height: 1.5; margin-bottom: 12px;">
+        You are about to restore snapshot <code id="modalBackupPath" style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; color: var(--warn); font-size: 12px;"></code>.
+      </p>
+      <div style="background: color-mix(in srgb, var(--bad) 10%, transparent); border: 1px solid color-mix(in srgb, var(--bad) 30%, transparent); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px;">
+        <p style="margin: 0; font-size: 12px; color: var(--text-2); line-height: 1.5;">
+          <strong style="color: var(--bad);">Warning:</strong> This will overwrite the live database and invoice uploads with the snapshot state. An automatic safety backup of current data will be created first.
+        </p>
+      </div>
+      <p class="text-secondary" style="font-size: 13px; margin: 0;">Do you wish to proceed?</p>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+      <button type="button" class="btn btn-secondary" onclick="closeRestoreModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" id="confirmRestoreBtn" onclick="executeRestore()" style="background: var(--bad); border-color: var(--bad);">
+        {{ icon('refresh', size=16) }}
+        <span>Yes, Restore Snapshot</span>
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let pendingRestoreId = null;
+
+function togglePasswordVisibility(fieldId, btn) {
+  const input = document.getElementById(fieldId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerHTML = '<svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  } else {
+    input.type = 'password';
+    btn.innerHTML = '<svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  }
+}
+
+async function updateProfile(e) {
+  e.preventDefault();
+  const payload = {
+    name: document.getElementById('prof_name').value,
+    gstin: document.getElementById('prof_gstin').value || null,
+    state_code: document.getElementById('prof_state').value || null,
+    address: document.getElementById('prof_address').value || null,
+    bank_name: document.getElementById('prof_bank').value || null,
+    account_no: document.getElementById('prof_account').value || null,
+    ifsc: document.getElementById('prof_ifsc').value || null,
+    upi_id: document.getElementById('prof_upi').value || null
+  };
+  try {
+    const res = await fetch('/api/v1/business/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      alert('Profile updated successfully.');
+    } else {
+      alert('Failed to update profile.');
+    }
+  } catch (err) {
+    alert('An error occurred while updating profile.');
+  }
+}
+
+async function addTeamMember(e) {
+  e.preventDefault();
+  const payload = {
+    name: document.getElementById('tm_name').value,
+    email: document.getElementById('tm_email').value,
+    password: document.getElementById('tm_pw').value,
+    role: document.getElementById('tm_role').value
+  };
+  try {
+    const res = await fetch('/api/v1/auth/team', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      alert('Team member added successfully.');
+      window.location.reload();
+    } else {
+      alert('Failed to add team member.');
+    }
+  } catch (err) {
+    alert('An error occurred while adding team member.');
+  }
+}
+
+async function createBackup() {
+  try {
+    const res = await fetch('/api/v1/backups', { method: 'POST' });
+    if (res.ok) {
+      alert('Backup created successfully.');
+      window.location.reload();
+    } else {
+      alert('Failed to create backup.');
+    }
+  } catch (err) {
+    alert('An error occurred while creating backup.');
+  }
+}
+
+function openRestoreModal(id, path) {
+  pendingRestoreId = id;
+  const pathEl = document.getElementById('modalBackupPath');
+  if (pathEl) pathEl.textContent = path || ('#' + id);
+  const modal = document.getElementById('restoreModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeRestoreModal() {
+  pendingRestoreId = null;
+  const modal = document.getElementById('restoreModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function executeRestore() {
+  if (!pendingRestoreId) return;
+  const btn = document.getElementById('confirmRestoreBtn');
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await fetch(`/api/v1/backups/${pendingRestoreId}/restore?confirm=true`, { method: 'POST' });
+    if (res.ok) {
+      alert('Restoration complete.');
+      window.location.reload();
+    } else {
+      alert('Restoration failed.');
+      if (btn) btn.disabled = false;
+    }
+  } catch (err) {
+    alert('An error occurred during restoration.');
+    if (btn) btn.disabled = false;
+  }
+}
+
+// Fallback for direct restoreBackup calls
+async function restoreBackup(id) {
+  openRestoreModal(id, '#' + id);
+}
+</script>
+{% endblock %}

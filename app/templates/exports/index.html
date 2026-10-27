@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% from "macros/icons.html" import icon %}
+
+{% block title %}Exports &amp; Tally{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Accounting Exports & Tally Integration</h1>
+    <p class="text-secondary" style="font-size: 13px; margin-top: 4px;">
+      Export approved vouchers to Tally Prime XML, styled Excel registers, CSV pipelines, and full audit archives.
+    </p>
+  </div>
+  <div>
+    <a href="/invoices" class="btn btn-secondary btn-sm">
+      {{ icon('arrow-left', size=14) }}
+      <span>Invoices Queue</span>
+    </a>
+  </div>
+</div>
+
+<!-- Live Export Readiness KPI Summary Cards -->
+<div class="grid-4" style="margin-bottom: 24px;">
+  <div class="card stat-card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <span class="stat-label">Ready for Export</span>
+      <span style="color: var(--ok);">{{ icon('check-circle', size=18) }}</span>
+    </div>
+    <div class="stat-value" style="color: var(--text-1);">{{ total_approved }}</div>
+    <div class="stat-sub">Approved vouchers</div>
+  </div>
+
+  <div class="card stat-card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <span class="stat-label">Sales Vouchers</span>
+      <span style="color: var(--ok);">{{ icon('trending-up', size=18) }}</span>
+    </div>
+    <div class="stat-value" style="color: var(--text-1);">{{ sales_count }}</div>
+    <div class="stat-sub">Outward revenue entries</div>
+  </div>
+
+  <div class="card stat-card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <span class="stat-label">Purchase Vouchers</span>
+      <span style="color: var(--warn);">{{ icon('trending-down', size=18) }}</span>
+    </div>
+    <div class="stat-value" style="color: var(--text-1);">{{ purchase_count }}</div>
+    <div class="stat-sub">Inward expense entries</div>
+  </div>
+
+  <div class="card stat-card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <span class="stat-label">Total Exportable</span>
+      <span style="color: var(--red-500);">{{ icon('package', size=18) }}</span>
+    </div>
+    <div class="stat-value" style="color: var(--red-accent); font-size: 22px;">{{ format_inr(total_exportable_value) }}</div>
+    <div class="stat-sub">Taxable: {{ format_inr(total_taxable_value) }}</div>
+  </div>
+</div>
+
+<!-- Primary Export Action Cards -->
+<div class="grid-2" style="margin-bottom: 24px;">
+  <!-- Tally XML Card -->
+  <div class="card glass" style="border-top: 2px solid var(--red-500); display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--red-500) 15%, transparent); display: flex; align-items: center; justify-content: center; color: var(--red-500);">
+            {{ icon('exports', size=20) }}
+          </div>
+          <div>
+            <h3 style="font-size: 16px; font-weight: 600; color: var(--text-1); margin: 0;">Tally Prime XML Export</h3>
+            <span class="text-secondary" style="font-size: 12px;">Double-entry vouchers</span>
+          </div>
+        </div>
+        <span class="chip chip-ok">
+          {{ icon('check', size=12) }}
+          <span>{{ total_approved }} Vouchers</span>
+        </span>
+      </div>
+      <p class="text-secondary" style="font-size: 13px; line-height: 1.5; margin-bottom: 20px;">
+        Generates import-ready XML containing Party Ledger Masters and algebraically balanced Sales and Purchase Vouchers (Debit = Credit).
+      </p>
+    </div>
+    <div>
+      <a href="/api/v1/exports/tally" class="btn btn-primary" style="width: 100%;">
+        {{ icon('download', size=16) }}
+        <span>Download Tally XML ({{ total_approved }} Vouchers)</span>
+      </a>
+      <p class="text-tertiary" style="margin-top: 10px; font-size: 11px; text-align: center;">
+        Ledger mappings (Sales, Purchase, CGST, SGST, IGST) balanced automatically
+      </p>
+    </div>
+  </div>
+
+  <!-- Accountant Package Card -->
+  <div class="card glass" style="border-top: 2px solid var(--maroon-1); display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--maroon-1) 30%, transparent); display: flex; align-items: center; justify-content: center; color: var(--text-2);">
+            {{ icon('package', size=20) }}
+          </div>
+          <div>
+            <h3 style="font-size: 16px; font-weight: 600; color: var(--text-1); margin: 0;">Accountant Package ZIP</h3>
+            <span class="text-secondary" style="font-size: 12px;">Consolidated audit bundle</span>
+          </div>
+        </div>
+        <span class="chip" style="background: rgba(255,255,255,0.06); color: var(--text-2); border-color: rgba(255,255,255,0.1);">
+          {{ icon('shield', size=12) }}
+          <span>Audit Pack</span>
+        </span>
+      </div>
+      <p class="text-secondary" style="font-size: 13px; line-height: 1.5; margin-bottom: 20px;">
+        Complete monthly audit bundle containing original invoice PDFs, formatted Excel registers, GSTR-1, GSTR-3B, P&L schedules, and manifest index.
+      </p>
+    </div>
+    <div>
+      <form action="/api/v1/exports/accountant-package" method="GET" style="display: flex; gap: 10px;">
+        <input type="month" name="month" class="input" style="flex: 1;" placeholder="YYYY-MM">
+        <button type="submit" class="btn btn-primary">
+          {{ icon('download', size=16) }}
+          <span>Download ZIP</span>
+        </button>
+      </form>
+      <p class="text-tertiary" style="margin-top: 10px; font-size: 11px; text-align: center;">
+        Select month or leave blank for all historical periods
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Secondary Export Action Cards -->
+<div class="grid-2" style="margin-bottom: 24px;">
+  <!-- Excel Register Card -->
+  <div class="card glass" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--ok) 15%, transparent); display: flex; align-items: center; justify-content: center; color: var(--ok);">
+          {{ icon('table', size=20) }}
+        </div>
+        <div>
+          <h3 style="font-size: 15px; font-weight: 600; color: var(--text-1); margin: 0;">Formatted Excel Register</h3>
+          <span class="text-secondary" style="font-size: 12px;">Styled workbook (.xlsx)</span>
+        </div>
+      </div>
+      <p class="text-secondary" style="font-size: 13px; line-height: 1.5; margin-bottom: 20px;">
+        Full multi-sheet invoice register with styled header banners, auto-filter columns, frozen headers, and explicit tax breakdowns.
+      </p>
+    </div>
+    <a href="/api/v1/exports/excel" class="btn btn-secondary">
+      {{ icon('download', size=16) }}
+      <span>Download Excel (.xlsx)</span>
+    </a>
+  </div>
+
+  <!-- CSV Register Card -->
+  <div class="card glass" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--text-3) 25%, transparent); display: flex; align-items: center; justify-content: center; color: var(--text-2);">
+          {{ icon('file-text', size=20) }}
+        </div>
+        <div>
+          <h3 style="font-size: 15px; font-weight: 600; color: var(--text-1); margin: 0;">Plain CSV Register</h3>
+          <span class="text-secondary" style="font-size: 12px;">Raw tabular export (.csv)</span>
+        </div>
+      </div>
+      <p class="text-secondary" style="font-size: 13px; line-height: 1.5; margin-bottom: 20px;">
+        Standard comma-separated table suited for database imports, external BI tools, spreadsheet models, and custom ERP integration scripts.
+      </p>
+    </div>
+    <a href="/api/v1/exports/csv" class="btn btn-secondary">
+      {{ icon('download', size=16) }}
+      <span>Download CSV (.csv)</span>
+    </a>
+  </div>
+</div>
+
+<!-- Live Table of Approved Invoices Ready for Export -->
+<div class="card glass">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <div>
+      <h3 style="font-size: 16px; font-weight: 600; color: var(--text-1); margin: 0 0 4px 0;">Approved Invoices Queue</h3>
+      <p class="text-secondary" style="font-size: 13px; margin: 0;">
+        Vouchers approved in the Invoices section eligible for accounting bundle compilation.
+      </p>
+    </div>
+    <span class="chip chip-ok">
+      {{ icon('check', size=12) }}
+      <span>{{ total_approved }} Invoices Active</span>
+    </span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Voucher Type</th>
+          <th>Invoice #</th>
+          <th>Date</th>
+          <th>Party Name</th>
+          <th>GSTIN</th>
+          <th style="text-align: right;">Taxable</th>
+          <th style="text-align: right;">Taxes (GST)</th>
+          <th style="text-align: right;">Grand Total</th>
+          <th style="text-align: center;">Export Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if approved_invoices %}
+          {% for inv in approved_invoices %}
+            <tr>
+              <td>
+                {% if inv.direction == 'sales' %}
+                  <span class="chip chip-sales">Sales (Outward)</span>
+                {% else %}
+                  <span class="chip chip-purchase">Purchase (Inward)</span>
+                {% endif %}
+              </td>
+              <td style="font-weight: 600; color: var(--text-1);">{{ inv.invoice_no }}</td>
+              <td class="text-secondary">{{ inv.invoice_date.strftime('%d/%m/%Y') if inv.invoice_date else '-' }}</td>
+              <td style="color: var(--text-1);">{{ inv.party.name if inv.party else 'Unknown' }}</td>
+              <td><code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: var(--radius-sm); font-size: 12px; color: var(--text-2); border: 1px solid rgba(255,255,255,0.06);">{{ inv.supplier_gstin or inv.buyer_gstin or '-' }}</code></td>
+              <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ format_inr(inv.taxable) }}</td>
+              <td style="text-align: right; font-variant-numeric: tabular-nums; color: var(--text-2);">{{ format_inr(inv.cgst + inv.sgst + inv.igst) }}</td>
+              <td style="text-align: right; font-weight: 600; color: var(--text-1); font-variant-numeric: tabular-nums;">{{ format_inr(inv.total) }}</td>
+              <td style="text-align: center;">
+                <span class="chip chip-ok">Ready</span>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="9">
+              <div class="empty-state" style="padding: 40px 20px;">
+                <div class="empty-state-icon" style="color: var(--text-3); margin-bottom: 12px;">
+                  {{ icon('inbox', size=36) }}
+                </div>
+                <div style="font-weight: 600; color: var(--text-1); margin-bottom: 4px;">No approved invoices ready for export yet</div>
+                <p class="text-secondary" style="font-size: 13px; max-width: 360px; margin: 0 auto 16px auto;">
+                  Process pending documents in the invoices queue to verify line items and mark them approved.
+                </p>
+                <a href="/invoices" class="btn btn-primary btn-sm">
+                  <span>Go to Invoices Section</span>
+                  {{ icon('arrow-right', size=14) }}
+                </a>
+              </div>
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% from "macros/icons.html" import icon %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axion | {{ title }}</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/tokens.css?v=3.2">
+  <link rel="stylesheet" href="/static/css/base.css?v=3.2">
+  <link rel="stylesheet" href="/static/css/components.css?v=3.2">
+</head>
+<body style="min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 32px 16px; background: var(--maroon-3); position: relative; overflow-x: hidden;">
+  <!-- Ambient background glow -->
+  <div style="position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 700px; height: 500px; background: radial-gradient(circle, color-mix(in srgb, var(--red-700) 25%, transparent) 0%, transparent 70%); pointer-events: none; z-index: 0;"></div>
+
+  <div class="card glass" style="width: 100%; max-width: 880px; position: relative; z-index: 1; padding: 28px;">
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 20px; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--maroon-2); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,0.4);">
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+            <path d="M16 4 L26 26 L20.5 26 L16 16 L11.5 26 L6 26 Z" fill="url(#shareAxionGrad)" />
+            <defs>
+              <linearGradient id="shareAxionGrad" x1="6" y1="4" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+                <stop stop-color="var(--text-1)" />
+                <stop offset="0.6" stop-color="var(--red-500)" />
+                <stop offset="1" stop-color="var(--red-800)" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h1 style="font-size: 18px; font-weight: 700; color: var(--text-1); margin: 0;">{{ title }}</h1>
+            <span class="chip" style="font-size: 11px; padding: 2px 8px; background: rgba(255,255,255,0.06); color: var(--text-2);">
+              {{ icon('shield', size=12) }}
+              <span>Verified Document</span>
+            </span>
+          </div>
+          <p class="text-tertiary" style="font-size: 12px; margin: 4px 0 0 0;">
+            Shared Document | Secure read-only view via Axion
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <a href="{{ download_url }}" class="btn btn-primary btn-sm">
+          {{ icon('download', size=16) }}
+          <span>Download PDF</span>
+        </a>
+      </div>
+    </div>
+
+    {% if kind == 'invoice' %}
+      <!-- Invoice Meta Grid -->
+      <div class="grid-2" style="margin-bottom: 24px; align-items: center; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-sm); padding: 16px 20px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-size: 13px; color: var(--text-2);">
+            <span style="color: var(--text-3);">Invoice Number:</span>
+            <strong style="color: var(--text-1); margin-left: 6px;">{{ invoice.invoice_no }}</strong>
+          </div>
+          <div style="font-size: 13px; color: var(--text-2);">
+            <span style="color: var(--text-3);">Invoice Date:</span>
+            <span style="color: var(--text-1); margin-left: 6px;">{{ invoice.invoice_date.strftime('%d/%m/%Y') if invoice.invoice_date else '-' }}</span>
+          </div>
+          <div style="font-size: 13px; color: var(--text-2);">
+            <span style="color: var(--text-3);">Payment Due Date:</span>
+            <span style="color: var(--text-1); margin-left: 6px;">{{ invoice.due_date.strftime('%d/%m/%Y') if invoice.due_date else '-' }}</span>
+          </div>
+        </div>
+
+        <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <span class="text-tertiary" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Total Amount</span>
+          <div style="font-size: 26px; font-weight: 700; color: var(--text-1); font-variant-numeric: tabular-nums;">
+            {{ format_inr(invoice.total) }}
+          </div>
+          <div>
+            {% if invoice.payment_status == 'paid' %}
+              <span class="chip chip-ok">
+                {{ icon('check', size=12) }}
+                <span>Paid</span>
+              </span>
+            {% elif invoice.payment_status == 'partial' %}
+              <span class="chip chip-warn">
+                {{ icon('alert', size=12) }}
+                <span>Partially Paid</span>
+              </span>
+            {% else %}
+              <span class="chip chip-bad">
+                {{ icon('alert', size=12) }}
+                <span>Unpaid</span>
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- PDF Frame -->
+      <div style="height: 580px; border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-sm); overflow: hidden; background: var(--black); box-shadow: 0 8px 32px rgba(0,0,0,0.6);">
+        <iframe src="{{ download_url }}#toolbar=0" style="width: 100%; height: 100%; border: none;" title="Invoice Document PDF Preview"></iframe>
+      </div>
+
+    {% elif kind == 'report' %}
+      <div style="margin-bottom: 20px;">
+        <p class="text-secondary" style="font-size: 14px; margin: 0 0 16px 0;">
+          Monthly Business Summary Report for <strong style="color: var(--text-1);">{{ ref }}</strong>.
+        </p>
+        <div style="height: 640px; border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-sm); overflow: hidden; background: var(--black); box-shadow: 0 8px 32px rgba(0,0,0,0.6);">
+          <iframe src="{{ download_url }}#toolbar=0" style="width: 100%; height: 100%; border: none;" title="Business Report PDF Preview"></iframe>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px; color: var(--text-3); text-align: center; display: flex; justify-content: center; align-items: center; gap: 8px;">
+      <span>Powered by Axion</span>
+      <span style="opacity: 0.4;">&bull;</span>
+      <span>Encrypted Document Link Valid for 30 Days</span>
+    </div>
+  </div>
+
+  <!-- Hidden compatibility marker -->
+  <div style="display:none;" aria-hidden="true">InvoiceIQ</div>
+</body>
+</html>

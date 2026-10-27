@@ -1,0 +1,667 @@
+{% extends "base.html" %}
+{% block title %}Invoices Register{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Invoices Register</h1>
+    <p style="font-size: var(--font-size-sm); color: var(--text-3); margin-top: 4px;">
+      Centralized ledger of extracted purchase bills, sales invoices, collections, and statutory validation statuses.
+    </p>
+  </div>
+  <div class="page-actions">
+    {% if user and user.role in ['owner', 'accountant'] %}
+    <a href="/invoices/new" class="btn btn-secondary btn-sm">
+      {{ icon('plus', size=15) }}
+      <span>New Sales Invoice</span>
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Two Section Segmented Switcher: Current Invoices vs Saved Collections -->
+<div style="display: flex; gap: var(--sp-2); margin-bottom: var(--sp-6); border-bottom: 1px solid rgba(167, 220, 165, 0.35); padding-bottom: var(--sp-3);">
+  <a href="/invoices?view=current" class="btn {% if view == 'current' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm" style="border-radius: var(--r-pill); padding: 8px 18px; font-weight: 600;">
+    {{ icon('invoices', size=15) }}
+    <span>Current Invoices</span>
+  </a>
+  <a href="/invoices?view=collections" class="btn {% if view == 'collections' and not selected_collection %}btn-primary{% elif view == 'collections' %}btn-secondary{% else %}btn-ghost{% endif %} btn-sm" style="border-radius: var(--r-pill); padding: 8px 18px; font-weight: 600;">
+    {{ icon('folder', size=15) }}
+    <span>Saved Collections ({{ collections|length if collections else 0 }})</span>
+  </a>
+</div>
+
+{% if view == 'collections' and not selected_collection %}
+<!-- ============================================================== -->
+<!-- SECTION 2: SAVED COLLECTIONS GRID -->
+<!-- ============================================================== -->
+<div style="margin-bottom: var(--sp-6);">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4);">
+    <div>
+      <h2 style="font-size: var(--font-size-h2); color: var(--text-1); margin: 0;">Saved Collections</h2>
+      <p style="font-size: var(--font-size-caption); color: var(--text-3); margin-top: 2px;">
+        Archived batches categorized by business period and custom collection name.
+      </p>
+    </div>
+    <a href="/invoices?view=current" class="btn btn-ghost btn-sm">
+      <span>View Current Invoices</span>
+      {{ icon('arrow-right', size=13) }}
+    </a>
+  </div>
+
+  {% if collections and collections|length > 0 %}
+    <div class="grid-3" style="gap: var(--sp-5);">
+      {% for col in collections %}
+        <div class="card glass glass-interactive" onclick="window.location.href='/invoices?view=collections&collection_id={{ col.id }}'" style="cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 180px; padding: var(--sp-5);">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-2);">
+              <h3 style="font-size: 17px; font-weight: 600; color: var(--text-1); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                {{ col.name }}
+              </h3>
+              <span class="chip chip-info" style="font-size: 11px; padding: 2px 8px;">
+                {{ col.month_name }} {{ col.year }}
+              </span>
+            </div>
+            <div style="font-size: 13px; color: var(--text-3); margin-top: 4px;">
+              {{ col.invoice_count }} invoice{{ 's' if col.invoice_count != 1 else '' }} saved
+            </div>
+          </div>
+
+          <div style="border-top: 1px solid rgba(167, 220, 165, 0.30); padding-top: var(--sp-3); margin-top: var(--sp-4); display: flex; justify-content: space-between; align-items: baseline;">
+            <div>
+              <span style="font-size: 11px; text-transform: uppercase; color: var(--text-3); font-weight: 600; display: block;">Total Amount</span>
+              <span class="tabular font-weight-600" style="font-size: 18px; color: var(--text-1);">
+                {{ format_inr(col.total_paise) }}
+              </span>
+            </div>
+            <span class="btn btn-ghost btn-sm" style="padding: 4px 10px; font-size: 12px; pointer-events: none;">
+              <span>View</span>
+              {{ icon('chevron-right', size=12) }}
+            </span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card glass" style="padding: var(--sp-10) var(--sp-6);">
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          {{ icon('folder', size=28) }}
+        </div>
+        <h3>No Saved Collections Yet</h3>
+        <p>You have not saved any invoice collections. Go to Current Invoices to review and save your invoices into a named collection.</p>
+        <div style="margin-top: var(--sp-4);">
+          <a href="/invoices?view=current" class="btn btn-primary btn-sm">Go to Current Invoices</a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+{% else %}
+<!-- ============================================================== -->
+<!-- SECTION 1: CURRENT INVOICES (OR SELECTED COLLECTION DETAILS) -->
+<!-- ============================================================== -->
+
+<!-- Active Collection Banner (if inspecting a saved collection) -->
+{% if selected_collection %}
+<div class="card glass" style="margin-bottom: var(--sp-6); padding: var(--sp-5) var(--sp-6); background: rgba(228, 253, 225, 0.60); border: 1px solid rgba(144, 207, 142, 0.70);">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sp-3);">
+    <div style="display: flex; align-items: center; gap: var(--sp-3);">
+      <a href="/invoices?view=collections" class="btn btn-ghost btn-sm" title="Back to collections list">
+        {{ icon('arrow-left', size=15) }}
+        <span>All Collections</span>
+      </a>
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h2 style="font-size: 19px; font-weight: 600; color: var(--text-1); margin: 0;">{{ selected_collection.name }}</h2>
+          <span class="chip chip-ok" style="font-size: 11px;">{{ selected_collection.month_name }} {{ selected_collection.year }}</span>
+        </div>
+        <span style="font-size: 12.5px; color: var(--text-3);">
+          {{ total }} invoice{{ 's' if total != 1 else '' }} in this collection • Total value: <strong style="color: var(--text-1);">{{ format_inr(selected_collection.total_paise) }}</strong>
+        </span>
+      </div>
+    </div>
+    <a href="/api/v1/reports/monthly-pdf?month={{ '%04d-%02d' % (selected_collection.year, selected_collection.month) }}" class="btn btn-primary btn-sm">
+      {{ icon('download', size=14) }}
+      <span>Download Collection Report PDF</span>
+    </a>
+  </div>
+</div>
+{% else %}
+<!-- Current Invoices Action Toolbar: Save to Collection Button -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4); flex-wrap: wrap; gap: var(--sp-3);">
+  <div>
+    <h2 style="font-size: var(--font-size-h2); color: var(--text-1); margin: 0;">Current Invoices</h2>
+    <p style="font-size: var(--font-size-caption); color: var(--text-3); margin-top: 2px;">
+      Invoices from your recent upload session. Review, approve, and save into a permanent collection.
+    </p>
+  </div>
+  <div style="display: flex; gap: var(--sp-2);">
+    {% if invoices and invoices|length > 0 %}
+    <button type="button" class="btn btn-secondary btn-sm" onclick="openSaveCollectionModal()">
+      {{ icon('folder', size=14) }}
+      <span>Save All into Collection</span>
+    </button>
+    <button type="button" class="btn btn-primary btn-sm" onclick="openClearWorkspaceModal()">
+      {{ icon('trash', size=14) }}
+      <span>Clear Workspace</span>
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Tidy Glass Filter Toolbar -->
+<div class="card glass" style="padding: var(--sp-4) var(--sp-5); margin-bottom: var(--sp-6);">
+  <form method="GET" action="/invoices" style="display: flex; gap: var(--sp-3); align-items: center; flex-wrap: wrap;">
+    <input type="hidden" name="view" value="current">
+    <div style="flex: 1; min-width: 150px;">
+      <select name="direction" aria-label="Filter by Direction">
+        <option value="all">All Directions</option>
+        <option value="purchase" {% if filters.direction == 'purchase' %}selected{% endif %}>Purchase (Inward)</option>
+        <option value="sales" {% if filters.direction == 'sales' %}selected{% endif %}>Sales (Outward)</option>
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 150px;">
+      <select name="status" aria-label="Filter by Review Status">
+        <option value="all">All Review Statuses</option>
+        <option value="pending_review" {% if filters.status == 'pending_review' %}selected{% endif %}>Pending Review</option>
+        <option value="approved" {% if filters.status == 'approved' %}selected{% endif %}>Approved</option>
+        <option value="rejected" {% if filters.status == 'rejected' %}selected{% endif %}>Rejected</option>
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 150px;">
+      <select name="payment" aria-label="Filter by Payment Status">
+        <option value="all">All Payment Statuses</option>
+        <option value="unpaid" {% if filters.payment == 'unpaid' %}selected{% endif %}>Unpaid</option>
+        <option value="partial" {% if filters.payment == 'partial' %}selected{% endif %}>Partial</option>
+        <option value="paid" {% if filters.payment == 'paid' %}selected{% endif %}>Paid</option>
+      </select>
+    </div>
+
+    <div style="width: 175px;">
+      <input type="month" name="month" value="{{ filters.month or '' }}" aria-label="Filter by Month">
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-sm">
+      {{ icon('filter', size=14) }}
+      <span>Apply</span>
+    </button>
+    <a href="/invoices?view=current" class="btn btn-ghost btn-sm" title="Reset Filters">
+      {{ icon('refresh', size=14) }}
+      <span>Reset</span>
+    </a>
+  </form>
+</div>
+{% endif %}
+
+<!-- Invoices Data Table -->
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Invoice Number</th>
+        <th>Date</th>
+        <th>Direction</th>
+        <th>Party Name</th>
+        <th>GSTIN</th>
+        <th class="text-right">Total Amount</th>
+        <th>Payment</th>
+        <th>Validation</th>
+        <th>Review</th>
+        <th class="text-center">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if invoices and invoices|length > 0 %}
+        {% for inv in invoices %}
+          <tr>
+            <td>
+              <span style="font-weight: 600; color: var(--text-1);">{{ inv.invoice_no }}</span>
+            </td>
+            <td class="tabular" style="color: var(--text-2);">
+              {{ inv.invoice_date.strftime('%d/%m/%Y') if inv.invoice_date else '-' }}
+            </td>
+            <td>
+              {% if inv.direction == 'sales' %}
+                <span class="chip chip-sales">{{ icon('arrow-right', size=12) }} Sales</span>
+              {% elif inv.direction == 'purchase' %}
+                <span class="chip chip-purchase">{{ icon('arrow-left', size=12) }} Purchase</span>
+              {% else %}
+                <span class="chip chip-info">{{ icon('info', size=12) }} Unknown</span>
+              {% endif %}
+            </td>
+            <td style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {{ inv.party.name if inv.party else 'Unknown' }}
+            </td>
+            <td>
+              <code style="font-size: 12px; color: var(--text-2); background: rgba(255,255,255,0.70); border: 1px solid rgba(167,220,165,0.30); padding: 2px 6px; border-radius: 4px;">
+                {{ inv.supplier_gstin or inv.buyer_gstin or '-' }}
+              </code>
+            </td>
+            <td class="text-right tabular" style="font-weight: 600;">
+              {{ format_inr(inv.total) }}
+            </td>
+            <td>
+              {% if inv.payment_status == 'paid' %}
+                <span class="chip chip-ok">{{ icon('check', size=12) }} Paid</span>
+              {% elif inv.payment_status == 'partial' %}
+                <span class="chip chip-warn">{{ icon('alert', size=12) }} Partial</span>
+              {% else %}
+                <span class="chip chip-bad">{{ icon('close', size=12) }} Unpaid</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if inv.validation_status == 'ok' %}
+                <span class="chip chip-ok">{{ icon('check', size=12) }} Valid</span>
+              {% elif inv.validation_status == 'warnings' %}
+                <span class="chip chip-warn">{{ icon('alert', size=12) }} Warnings</span>
+              {% else %}
+                <span class="chip chip-bad">{{ icon('close', size=12) }} Errors</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if inv.review_status == 'approved' %}
+                <span class="chip chip-ok">{{ icon('check', size=12) }} Approved</span>
+              {% elif inv.review_status == 'rejected' %}
+                <span class="chip chip-bad">{{ icon('close', size=12) }} Rejected</span>
+              {% else %}
+                <span class="chip chip-warn">{{ icon('alert', size=12) }} Pending</span>
+              {% endif %}
+            </td>
+            <td class="text-center" style="white-space: nowrap;">
+              <a href="/invoices/{{ inv.id }}/review" class="btn btn-ghost btn-sm">
+                <span>Review</span>
+                {{ icon('chevron-right', size=13) }}
+              </a>
+              {% if inv.review_status == 'pending_review' and user and user.role in ['owner', 'accountant'] %}
+              <button onclick="quickApprove({{ inv.id }})" class="btn btn-primary btn-sm" style="margin-left: 4px; padding: 5px 10px;" title="Approve invoice">
+                {{ icon('check', size=13) }}
+                <span>Approve</span>
+              </button>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="10" style="padding: 0;">
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                {{ icon('invoices', size=24) }}
+              </div>
+              {% if view == 'current' %}
+                <h3>Workspace is Clear</h3>
+                <p>No active invoices in your workspace. All cleared invoices are safely stored in your Collections menu.</p>
+                <div style="display: flex; gap: var(--sp-3); margin-top: var(--sp-2);">
+                  <a href="/upload" class="btn btn-primary btn-sm">Upload Invoices</a>
+                  <a href="/invoices?view=collections" class="btn btn-secondary btn-sm">View Saved Collections</a>
+                </div>
+              {% else %}
+                <h3>No Invoices Found</h3>
+                <p>No invoices match your selected filters. Upload new invoices or clear filters.</p>
+                <div style="display: flex; gap: var(--sp-3); margin-top: var(--sp-2);">
+                  <a href="/upload" class="btn btn-primary btn-sm">Upload Invoices</a>
+                  <a href="/invoices?view=current" class="btn btn-ghost btn-sm">Reset Filters</a>
+                </div>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- Save Collection Modal -->
+<div id="saveCollectionModal" class="modal-backdrop" style="display: none;">
+  <div class="modal card glass" style="max-width: 480px; width: 100%;" role="dialog" aria-labelledby="modalColTitle">
+    <div class="modal-header">
+      <h3 id="modalColTitle" class="modal-title">Save Invoices to Collection</h3>
+      <button type="button" class="modal-close" onclick="closeSaveCollectionModal()" aria-label="Close modal">
+        {{ icon('close', size=16) }}
+      </button>
+    </div>
+    <form id="saveCollectionForm" onsubmit="submitSaveCollection(event)">
+      <div class="modal-body">
+        <!-- Error Alert Banner -->
+        <div id="colErrorBanner" class="alert-box alert-danger" style="display: none; margin-bottom: var(--sp-3);">
+          {{ icon('alert', size=16) }}
+          <span id="colErrorText">Error message</span>
+        </div>
+
+        <p style="font-size: 13.5px; color: var(--text-2); margin-bottom: var(--sp-4); line-height: 1.5;">
+          Bundle your current invoices into an organized collection. Collection names must be unique (case-insensitive).
+        </p>
+
+        <div class="form-group">
+          <label for="col_name">Collection Name</label>
+          <input type="text" id="col_name" class="input" required placeholder="e.g. October 2026 Vendor Bills" autocomplete="off">
+          <small style="color: var(--text-3); font-size: 11.5px; margin-top: 3px;">
+            A user cannot name two collections the same name (ignoring caps).
+          </small>
+        </div>
+
+        <div class="grid-2" style="gap: var(--sp-3); margin-top: var(--sp-3);">
+          <div class="form-group">
+            <label for="col_month">Month</label>
+            <select id="col_month" class="select" required>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10" selected>October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="col_year">Year</label>
+            <select id="col_year" class="select" required>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeSaveCollectionModal()">Cancel</button>
+        <button type="submit" id="saveColBtn" class="btn btn-primary btn-sm">
+          {{ icon('folder', size=14) }}
+          <span>Save Collection</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Clear Workspace Modal -->
+<div id="clearWorkspaceModal" class="modal-backdrop" style="display: none;">
+  <div class="modal card glass" style="max-width: 480px; width: 100%;" role="dialog" aria-labelledby="modalClearTitle">
+    <div class="modal-header">
+      <h3 id="modalClearTitle" class="modal-title">Clear Active Workspace</h3>
+      <button type="button" class="modal-close" onclick="closeClearWorkspaceModal()" aria-label="Close modal">
+        {{ icon('close', size=16) }}
+      </button>
+    </div>
+    <form id="clearWorkspaceForm" onsubmit="submitClearWorkspace(event)">
+      <div class="modal-body">
+        <!-- Error Alert Banner -->
+        <div id="clearErrorBanner" class="alert-box alert-danger" style="display: none; margin-bottom: var(--sp-3);">
+          {{ icon('alert', size=16) }}
+          <span id="clearErrorText">Error message</span>
+        </div>
+
+        <p style="font-size: 13.5px; color: var(--text-2); margin-bottom: var(--sp-4); line-height: 1.5;">
+          All invoice tables will be cleared from your workspace. The same invoice table will be preserved and saved into your Collections menu.
+        </p>
+
+        <div class="form-group">
+          <label for="clear_col_name">Save Collection Name</label>
+          <input type="text" id="clear_col_name" class="input" required placeholder="e.g. October 2026 Archived Workspace" autocomplete="off">
+          <small style="color: var(--text-3); font-size: 11.5px; margin-top: 3px;">
+            Collection names must be unique (case-insensitive).
+          </small>
+        </div>
+
+        <div class="grid-2" style="gap: var(--sp-3); margin-top: var(--sp-3);">
+          <div class="form-group">
+            <label for="clear_col_month">Month</label>
+            <select id="clear_col_month" class="select" required>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10" selected>October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="clear_col_year">Year</label>
+            <select id="clear_col_year" class="select" required>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeClearWorkspaceModal()">Cancel</button>
+        <button type="submit" id="clearWsSubmitBtn" class="btn btn-primary btn-sm">
+          {{ icon('trash', size=14) }}
+          <span>Save to Collections &amp; Clear Workspace</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Quick Approve Invoice
+async function quickApprove(id) {
+  if (!confirm('Approve this invoice as a Purchase (Inward) invoice? It will immediately reflect in Reports, GST summaries, and Exports.')) return;
+  try {
+    const res = await fetch(`/api/v1/invoices/${id}/approve?direction=purchase`, { method: 'POST' });
+    if (res.ok) {
+      window.location.reload();
+    } else {
+      const err = await res.json();
+      alert('Failed to approve invoice: ' + (err.detail || 'Unknown error'));
+    }
+  } catch (err) {
+    alert('Error during approval: ' + err.message);
+  }
+}
+
+// Modal Handlers: Save Collection
+function openSaveCollectionModal() {
+  const modal = document.getElementById('saveCollectionModal');
+  const errBanner = document.getElementById('colErrorBanner');
+  if (errBanner) errBanner.style.display = 'none';
+
+  // Set default current month and year
+  const now = new Date();
+  const curMonth = (now.getMonth() + 1).toString();
+  const curYear = now.getFullYear().toString();
+  const monthSelect = document.getElementById('col_month');
+  const yearSelect = document.getElementById('col_year');
+  if (monthSelect) monthSelect.value = curMonth;
+  if (yearSelect && yearSelect.querySelector(`option[value="${curYear}"]`)) {
+    yearSelect.value = curYear;
+  }
+
+  if (modal) {
+    modal.style.display = 'flex';
+    document.getElementById('col_name').focus();
+  }
+}
+
+function closeSaveCollectionModal() {
+  const modal = document.getElementById('saveCollectionModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// Modal Handlers: Clear Workspace
+function openClearWorkspaceModal() {
+  const modal = document.getElementById('clearWorkspaceModal');
+  const errBanner = document.getElementById('clearErrorBanner');
+  if (errBanner) errBanner.style.display = 'none';
+
+  const now = new Date();
+  const curMonth = (now.getMonth() + 1).toString();
+  const curYear = now.getFullYear().toString();
+  const monthSelect = document.getElementById('clear_col_month');
+  const yearSelect = document.getElementById('clear_col_year');
+  if (monthSelect) monthSelect.value = curMonth;
+  if (yearSelect && yearSelect.querySelector(`option[value="${curYear}"]`)) {
+    yearSelect.value = curYear;
+  }
+
+  const nameInput = document.getElementById('clear_col_name');
+  if (nameInput) {
+    const monthNames = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    nameInput.value = `Workspace Collection - ${monthNames[parseInt(curMonth, 10)]} ${curYear}`;
+  }
+
+  if (modal) {
+    modal.style.display = 'flex';
+    if (nameInput) nameInput.focus();
+  }
+}
+
+function closeClearWorkspaceModal() {
+  const modal = document.getElementById('clearWorkspaceModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// Clear Workspace Form Submission
+async function submitClearWorkspace(e) {
+  e.preventDefault();
+  const nameInput = document.getElementById('clear_col_name');
+  const monthInput = document.getElementById('clear_col_month');
+  const yearInput = document.getElementById('clear_col_year');
+  const errBanner = document.getElementById('clearErrorBanner');
+  const errText = document.getElementById('clearErrorText');
+  const submitBtn = document.getElementById('clearWsSubmitBtn');
+
+  const colName = nameInput.value.trim();
+  const colMonth = parseInt(monthInput.value, 10);
+  const colYear = parseInt(yearInput.value, 10);
+
+  if (!colName) {
+    errText.textContent = 'Please provide a collection name.';
+    errBanner.style.display = 'flex';
+    return;
+  }
+
+  const invoiceIds = [];
+  {% if invoices %}
+    {% for inv in invoices %}
+      invoiceIds.push({{ inv.id }});
+    {% endfor %}
+  {% endif %}
+
+  submitBtn.disabled = true;
+  submitBtn.innerText = 'Clearing workspace...';
+
+  try {
+    const res = await fetch('/api/v1/collections/clear-workspace', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: colName,
+        month: colMonth,
+        year: colYear,
+        invoice_ids: invoiceIds,
+        clear_workspace: true
+      })
+    });
+
+    if (res.ok) {
+      closeClearWorkspaceModal();
+      // Redirect to saved collections view
+      window.location.href = '/invoices?view=collections';
+    } else {
+      const err = await res.json();
+      errText.textContent = err.detail || 'Failed to clear workspace.';
+      errBanner.style.display = 'flex';
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>Save to Collections &amp; Clear Workspace</span>';
+    }
+  } catch (err) {
+    errText.textContent = 'Network error: ' + err.message;
+    errBanner.style.display = 'flex';
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<span>Save to Collections &amp; Clear Workspace</span>';
+  }
+}
+
+// Save Collection Form Submission
+async function submitSaveCollection(e) {
+  e.preventDefault();
+  const nameInput = document.getElementById('col_name');
+  const monthInput = document.getElementById('col_month');
+  const yearInput = document.getElementById('col_year');
+  const errBanner = document.getElementById('colErrorBanner');
+  const errText = document.getElementById('colErrorText');
+  const submitBtn = document.getElementById('saveColBtn');
+
+  const colName = nameInput.value.trim();
+  const colMonth = parseInt(monthInput.value, 10);
+  const colYear = parseInt(yearInput.value, 10);
+
+  if (!colName) {
+    errText.textContent = 'Please provide a collection name.';
+    errBanner.style.display = 'flex';
+    return;
+  }
+
+  // Get current invoice IDs from table if any
+  const invoiceIds = [];
+  {% if invoices %}
+    {% for inv in invoices %}
+      invoiceIds.push({{ inv.id }});
+    {% endfor %}
+  {% endif %}
+
+  submitBtn.disabled = true;
+  submitBtn.innerText = 'Saving...';
+
+  try {
+    const res = await fetch('/api/v1/collections', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: colName,
+        month: colMonth,
+        year: colYear,
+        invoice_ids: invoiceIds
+      })
+    });
+
+    if (res.ok) {
+      closeSaveCollectionModal();
+      // Redirect to saved collections view
+      window.location.href = '/invoices?view=collections';
+    } else {
+      const err = await res.json();
+      errText.textContent = err.detail || 'Failed to save collection.';
+      errBanner.style.display = 'flex';
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>Save Collection</span>';
+    }
+  } catch (err) {
+    errText.textContent = 'Network error: ' + err.message;
+    errBanner.style.display = 'flex';
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<span>Save Collection</span>';
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Statement of Account - {{ ledger.party_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <a href="/parties" class="btn btn-ghost btn-sm" style="margin-bottom: var(--sp-2);">
+      {{ icon('chevron-left', size=14) }}
+      <span>Back to Parties</span>
+    </a>
+    <h1 class="page-title">Statement of Account: {{ ledger.party_name }}</h1>
+  </div>
+  <div class="page-actions">
+    <span class="chip {% if ledger.current_balance >= 0 %}chip-ok{% else %}chip-bad{% endif %}" style="font-size: 13px; padding: 6px 14px;">
+      Closing Balance: {{ format_inr(ledger.current_balance) }}
+    </span>
+  </div>
+</div>
+
+<!-- Row of 3 Stat Cards -->
+<div class="grid-3" style="margin-bottom: var(--sp-6);">
+  <div class="card glass stat-card">
+    <div class="stat-label">Total Debits</div>
+    <div class="stat-value tabular" style="color: var(--ok);">{{ format_inr(ledger.total_debit) }}</div>
+    <div class="stat-caption">Invoiced charges &amp; sales</div>
+  </div>
+
+  <div class="card glass stat-card">
+    <div class="stat-label">Total Credits</div>
+    <div class="stat-value tabular" style="color: var(--bad);">{{ format_inr(ledger.total_credit) }}</div>
+    <div class="stat-caption">Payments &amp; settlements</div>
+  </div>
+
+  <div class="card glass stat-card">
+    <div class="stat-label">Closing Net Balance</div>
+    <div class="stat-value tabular" style="color: var(--text-1);">{{ format_inr(ledger.current_balance) }}</div>
+    <div class="stat-caption">Cumulative ledger position</div>
+  </div>
+</div>
+
+<!-- Chronological Transaction Table -->
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Ref / Invoice #</th>
+        <th>Description</th>
+        <th class="text-right">Debit (Rs.)</th>
+        <th class="text-right">Credit (Rs.)</th>
+        <th class="text-right">Running Balance</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if ledger.entries and ledger.entries|length > 0 %}
+        {% for e in ledger.entries %}
+          <tr>
+            <td class="tabular" style="color: var(--text-2);">{{ e.date.strftime('%d/%m/%Y') }}</td>
+            <td>
+              {% if e.type == 'invoice' %}
+                <span class="chip chip-info">{{ icon('invoices', size=12) }} Invoice</span>
+              {% else %}
+                <span class="chip chip-ok">{{ icon('check', size=12) }} Payment</span>
+              {% endif %}
+            </td>
+            <td><span style="font-weight: 600; color: var(--text-1);">{{ e.reference_no }}</span></td>
+            <td style="color: var(--text-2);">{{ e.description }}</td>
+            <td class="text-right tabular" style="color: var(--ok);">{{ format_inr(e.debit) if e.debit > 0 else '-' }}</td>
+            <td class="text-right tabular" style="color: var(--bad);">{{ format_inr(e.credit) if e.credit > 0 else '-' }}</td>
+            <td class="text-right tabular" style="font-weight: 600; color: var(--text-1);">{{ format_inr(e.balance) }}</td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="7" style="padding: 0;">
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                {{ icon('calendar', size=24) }}
+              </div>
+              <h3>No Ledger Transactions</h3>
+              <p>No recorded invoices or payment settlements exist for this account yet.</p>
+            </div>
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

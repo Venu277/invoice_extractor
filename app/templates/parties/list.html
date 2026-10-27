@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Parties{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Parties &amp; Accounts</h1>
+    <p style="font-size: var(--font-size-sm); color: var(--text-3); margin-top: 4px;">
+      Suppliers and customers extracted from invoices, tracked with credit limits and individual ledgers.
+    </p>
+  </div>
+  <div class="page-actions" style="width: 320px;">
+    <div style="position: relative; width: 100%;">
+      <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); display: flex; align-items: center;">
+        {{ icon('search', size=15) }}
+      </span>
+      <input type="text" id="partySearch" placeholder="Search by name or GSTIN..." oninput="filterParties()" style="padding-left: 36px; width: 100%;">
+    </div>
+  </div>
+</div>
+
+<div class="table-container">
+  <table id="partiesTable">
+    <thead>
+      <tr>
+        <th>Party Name</th>
+        <th>Type</th>
+        <th>GSTIN</th>
+        <th>State</th>
+        <th>Payment Terms</th>
+        <th class="text-right">Credit Limit</th>
+        <th class="text-center">Action</th>
+      </tr>
+    </thead>
+    <tbody id="partiesBody">
+      {% if parties and parties|length > 0 %}
+        {% for p in parties %}
+          <tr class="party-row" data-name="{{ p.name|lower }}" data-gstin="{{ (p.gstin or '')|lower }}">
+            <td>
+              <span style="font-weight: 600; color: var(--text-1);">{{ p.name }}</span>
+            </td>
+            <td>
+              {% if p.type == 'vendor' %}
+                <span class="chip chip-purchase">{{ icon('arrow-left', size=12) }} Vendor</span>
+              {% elif p.type == 'customer' %}
+                <span class="chip chip-sales">{{ icon('arrow-right', size=12) }} Customer</span>
+              {% else %}
+                <span class="chip chip-info">{{ icon('parties', size=12) }} Both</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if p.gstin %}
+                <code style="font-size: 12px; color: var(--text-2); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">{{ p.gstin }}</code>
+              {% else %}
+                <span style="color: var(--text-3);">-</span>
+              {% endif %}
+            </td>
+            <td>{{ p.state_code or '-' }}</td>
+            <td class="tabular">{{ p.payment_terms_days }} days</td>
+            <td class="text-right tabular">{{ format_inr(p.credit_limit_paise) }}</td>
+            <td class="text-center">
+              <a href="/parties/{{ p.id }}/ledger" class="btn btn-ghost btn-sm">
+                <span>View Ledger</span>
+                {{ icon('chevron-right', size=13) }}
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="7" style="padding: 0;">
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                {{ icon('parties', size=24) }}
+              </div>
+              <h3>No Parties Found</h3>
+              <p>Parties are automatically detected and created from extracted vendor bills and sales invoices.</p>
+            </div>
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterParties() {
+  const query = document.getElementById('partySearch').value.toLowerCase().trim();
+  const rows = document.querySelectorAll('.party-row');
+
+  rows.forEach(r => {
+    const name = r.getAttribute('data-name') || '';
+    const gstin = r.getAttribute('data-gstin') || '';
+    if (name.includes(query) || gstin.includes(query)) {
+      r.style.display = '';
+    } else {
+      r.style.display = 'none';
+    }
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% block title %}Upload Invoices{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Upload Invoices</h1>
+    <p style="font-size: var(--font-size-sm); color: var(--text-3); margin-top: 4px;">
+      Ingest digital PDFs, scanned receipts, or bulk ZIP archives (up to 10 MB per file) into the Axion extraction pipeline.
+    </p>
+  </div>
+  <div class="page-actions">
+    <a href="/invoices" class="btn btn-ghost btn-sm">
+      {{ icon('invoices', size=15) }}
+      <span>View Invoices</span>
+    </a>
+  </div>
+</div>
+
+<!-- Full-Screen Drop & Upload Zone Container -->
+<div style="width: 100%; width: 100%;">
+  <div class="card glass" style="margin-bottom: var(--sp-6); padding: var(--sp-8);">
+    <form id="uploadForm" enctype="multipart/form-data">
+      <div id="dropZone" class="drop-zone squircle" tabindex="0" role="button" aria-label="Click the upload logo or drop documents here" style="min-height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; padding: var(--sp-10) var(--sp-6); background: rgba(255, 255, 255, 0.45); border: 2px dashed rgba(144, 207, 142, 0.75); border-radius: var(--r-xl); transition: all var(--dur-normal) var(--ease-apple);">
+        <input type="file" id="fileInput" name="files" multiple accept=".pdf,.zip" style="display: none;">
+
+        <!-- Prominent Upload Logo Tile: Clicking triggers file dialog -->
+        <div id="uploadLogoTile" class="squircle" style="width: 84px; height: 84px; border-radius: var(--r-lg); background: linear-gradient(135deg, var(--pistachio), var(--celadon)); border: 1px solid rgba(144, 207, 142, 0.90); box-shadow: 0 8px 24px rgba(144, 207, 142, 0.40); display: flex; align-items: center; justify-content: center; color: var(--text-1); margin-bottom: var(--sp-5); transition: transform var(--dur-fast) var(--ease-apple), box-shadow var(--dur-fast) var(--ease-apple);">
+          {{ icon('upload', size=36) }}
+        </div>
+
+        <h2 style="font-size: 20px; font-weight: 600; color: var(--text-1); margin-bottom: 6px;">
+          Click upload logo or drop invoice documents here
+        </h2>
+        <p style="font-size: 14px; color: var(--text-2); max-width: 520px; text-align: center; line-height: 1.6; margin-bottom: var(--sp-3);">
+          Seamless ingestion for digital GST invoices, vendor receipts, and multi-file archives.
+        </p>
+        <span class="chip chip-info" style="font-size: 12px; padding: 4px 12px;">
+          Supports single or multiple PDF invoices and ZIP archives up to 10 MB
+        </span>
+      </div>
+
+      <!-- Selected Files Staging List -->
+      <div id="fileListContainer" class="file-list" style="display: none; margin-top: var(--sp-6); flex-direction: column; gap: var(--sp-2);"></div>
+
+      <div id="actionRow" style="margin-top: var(--sp-5); display: none; justify-content: flex-end;">
+        <button type="submit" id="uploadBtn" class="btn btn-primary" style="padding: 12px 24px;">
+          {{ icon('upload', size=16) }}
+          <span>Start Extraction Pipeline</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Extraction Pipeline Progress Box -->
+    <div id="progressBox" style="display: none; margin-top: var(--sp-6); padding-top: var(--sp-5); border-top: 1px solid rgba(167, 220, 165, 0.35);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-2);">
+        <span id="progressText" style="font-size: 14px; font-weight: 500; color: var(--text-1);">Extracting documents...</span>
+        <span id="progressCounts" class="tabular" style="font-size: 13.5px; font-weight: 600; color: var(--text-1);">0 / 0</span>
+      </div>
+
+      <div style="width: 100%; height: 8px; background: rgba(167, 220, 165, 0.30); border-radius: var(--r-pill); overflow: hidden;">
+        <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--pistachio), var(--red-accent)); transition: width 0.3s var(--ease-apple);"></div>
+      </div>
+
+      <!-- Batch Completed Notice -->
+      <div id="batchCompletedNotice" style="display: none; margin-top: var(--sp-5); align-items: center; justify-content: space-between;" class="alert-box alert-success">
+        <div style="display: flex; align-items: center; gap: var(--sp-3);">
+          {{ icon('check', size=18) }}
+          <span style="font-weight: 500;">Batch extraction and statutory validation complete.</span>
+        </div>
+        <a href="/invoices" class="btn btn-primary btn-sm">
+          <span>Review Invoices</span>
+          {{ icon('chevron-right', size=13) }}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const fileInput = document.getElementById('fileInput');
+const dropZone = document.getElementById('dropZone');
+const uploadLogoTile = document.getElementById('uploadLogoTile');
+const fileListContainer = document.getElementById('fileListContainer');
+const actionRow = document.getElementById('actionRow');
+const uploadBtn = document.getElementById('uploadBtn');
+let selectedFiles = [];
+
+// Clicking on upload logo tile OR anywhere in dropzone triggers file picker automatically
+dropZone.addEventListener('click', (e) => {
+  fileInput.click();
+});
+
+// Animate upload logo on hover
+dropZone.addEventListener('mouseenter', () => {
+  uploadLogoTile.style.transform = 'scale(1.08)';
+});
+dropZone.addEventListener('mouseleave', () => {
+  uploadLogoTile.style.transform = 'scale(1)';
+});
+
+// Drag and drop events
+['dragenter', 'dragover'].forEach(eventName => {
+  dropZone.addEventListener(eventName, (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = 'var(--red-accent)';
+    dropZone.style.background = 'rgba(228, 253, 225, 0.85)';
+  });
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+  dropZone.addEventListener(eventName, (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = 'rgba(144, 207, 142, 0.75)';
+    dropZone.style.background = 'rgba(255, 255, 255, 0.45)';
+  });
+});
+
+dropZone.addEventListener('drop', (e) => {
+  if (e.dataTransfer.files.length) {
+    handleFiles(Array.from(e.dataTransfer.files));
+  }
+});
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) {
+    handleFiles(Array.from(fileInput.files));
+  }
+});
+
+function handleFiles(files) {
+  selectedFiles = files;
+  renderFileList();
+  if (selectedFiles.length > 0) {
+    actionRow.style.display = 'flex';
+    uploadBtn.disabled = false;
+  } else {
+    actionRow.style.display = 'none';
+  }
+}
+
+function renderFileList() {
+  if (!selectedFiles.length) {
+    fileListContainer.style.display = 'none';
+    fileListContainer.innerHTML = '';
+    return;
+  }
+  fileListContainer.style.display = 'flex';
+  fileListContainer.innerHTML = '';
+
+  selectedFiles.forEach((file, index) => {
+    const item = document.createElement('div');
+    item.className = 'card glass';
+    item.style.padding = '10px 16px';
+    item.style.display = 'flex';
+    item.style.alignItems = 'center';
+    item.style.justifyContent = 'space-between';
+    item.style.marginBottom = '6px';
+
+    const sizeKb = (file.size / 1024).toFixed(1);
+    item.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+        <span style="color: var(--red-accent); font-weight: 600;">DOC</span>
+        <span style="font-weight: 500; color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${file.name}</span>
+        <span style="color: var(--text-3); font-size: 12px;">(${sizeKb} KB)</span>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); removeFile(${index})" style="padding: 4px 8px; color: var(--bad);">
+        Remove
+      </button>
+    `;
+    fileListContainer.appendChild(item);
+  });
+}
+
+function removeFile(index) {
+  selectedFiles.splice(index, 1);
+  renderFileList();
+  if (selectedFiles.length === 0) {
+    actionRow.style.display = 'none';
+  }
+}
+
+document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  if (!selectedFiles.length) return;
+
+  const formData = new FormData();
+  for (let i = 0; i < selectedFiles.length; i++) {
+    formData.append('files', selectedFiles[i]);
+  }
+
+  uploadBtn.disabled = true;
+  uploadBtn.innerHTML = '<span>Uploading...</span>';
+
+  const progressBox = document.getElementById('progressBox');
+  progressBox.style.display = 'block';
+
+  try {
+    const res = await fetch('/api/v1/documents/upload', {
+      method: 'POST',
+      body: formData
+    });
+    if (!res.ok) throw new Error('Upload request failed');
+    const batch = await res.json();
+    pollBatch(batch.id);
+  } catch (err) {
+    alert('Error during upload: ' + err.message);
+    uploadBtn.disabled = false;
+    uploadBtn.innerHTML = '<span>Start Extraction Pipeline</span>';
+  }
+});
+
+function pollBatch(batchId) {
+  const interval = setInterval(async () => {
+    try {
+      const res = await fetch('/api/v1/documents/batches/' + batchId);
+      const data = await res.json();
+      const doneTotal = data.done + data.failed;
+      const total = data.total || 1;
+      const pct = Math.round((doneTotal / total) * 100);
+
+      document.getElementById('progressBar').style.width = pct + '%';
+      document.getElementById('progressCounts').innerText = `${doneTotal} / ${total} (${data.failed} failed)`;
+
+      if (data.status === 'completed' || doneTotal >= total) {
+        clearInterval(interval);
+        document.getElementById('progressText').innerText = 'Batch completed';
+        document.getElementById('batchCompletedNotice').style.display = 'flex';
+      }
+    } catch (e) {
+      clearInterval(interval);
+    }
+  }, 1000);
+}
+</script>
+{% endblock %}

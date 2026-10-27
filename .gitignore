@@ -1,0 +1,44 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Environment Variables & Secrets
+.env
+*.env.local
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Database files
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+*.db
+*.sqlite3
+
+# Uploads, Logs, and Runtime Artifacts
+logs/
+uploads/
+backups/
+output/
+outputs/
+screenshots/
+scratch/
+
+# Agent & Workspace State
+.agents/
+.gemini/
+.idea/
+.vscode/
+
+# Operating System Files
+.DS_Store
+Thumbs.db

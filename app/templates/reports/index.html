@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% block title %}Reports &amp; GST{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Statutory Reports &amp; GST Summaries</h1>
+    <p style="font-size: var(--font-size-sm); color: var(--text-3); margin-top: 4px;">
+      Tax reconciliation, statutory set-off balances, and financial performance derived from approved invoices.
+    </p>
+  </div>
+  <div class="page-actions">
+    <form method="GET" action="/reports" style="display: flex; gap: var(--sp-2); align-items: center;">
+      <input type="month" name="month" value="{{ selected_month or '' }}" aria-label="Select report period" style="width: 175px;">
+      <button type="submit" class="btn btn-primary btn-sm">
+        {{ icon('filter', size=14) }}
+        <span>Apply</span>
+      </button>
+      {% if selected_month %}
+      <a href="/reports" class="btn btn-ghost btn-sm" title="Clear filter">
+        {{ icon('close', size=14) }}
+      </a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Subtle Statutory Notice Bar -->
+<div class="alert-box alert-info" style="margin-bottom: var(--sp-6);">
+  {{ icon('info', size=18) }}
+  <span style="font-size: 13px;">
+    Figures below are computed from reviewed and approved invoice records for business reconciliation and accounting review. These are working calculations, not official government filing forms.
+  </span>
+</div>
+
+<!-- Three Summary Cards -->
+<div class="grid-3" style="margin-bottom: var(--sp-6);">
+  <!-- Monthly Business Report Card -->
+  <div class="card glass stat-card">
+    <div>
+      <div class="stat-label">
+        <span>Executive Summary</span>
+        {{ icon('file-text', size=16, class='text-muted') }}
+      </div>
+      <h3 style="font-size: 17px; margin-bottom: 6px; color: var(--text-1);">Monthly PDF Report</h3>
+      <p style="font-size: 12.5px; color: var(--text-2); line-height: 1.5; margin-bottom: var(--sp-4);">
+        Download executive A4 print-ready PDF containing KPIs, GST breakdown, and party register.
+      </p>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" onclick="openReportModal()" style="align-self: flex-start;">
+      {{ icon('download', size=14) }}
+      <span>Generate Monthly PDF</span>
+    </button>
+  </div>
+
+  <!-- Accrual Profit & Loss Card -->
+  <div class="card glass stat-card">
+    <div>
+      <div class="stat-label">
+        <span>Accrual P&amp;L</span>
+        {{ icon('reports', size=16, class='text-muted') }}
+      </div>
+      <div style="font-size: 13px; display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--sp-3);">
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-3);">Income (Sales):</span>
+          <span class="tabular font-weight-500">{{ format_inr(pnl.income.taxable) }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-3);">Expenses (Purchases):</span>
+          <span class="tabular font-weight-500">{{ format_inr(pnl.expenses.taxable) }}</span>
+        </div>
+      </div>
+    </div>
+    <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: var(--sp-2);">
+      <div style="font-size: 11px; text-transform: uppercase; color: var(--text-3); font-weight: 600;">Net Profit</div>
+      <div class="stat-value tabular" style="font-size: 22px; display: flex; align-items: center; gap: 6px; color: {% if pnl.net_profit >= 0 %}var(--ok){% else %}var(--bad){% endif %};">
+        {% if pnl.net_profit >= 0 %}
+          {{ icon('check', size=18) }}
+          <span>{{ format_inr(pnl.net_profit) }}</span>
+        {% else %}
+          {{ icon('alert', size=18) }}
+          <span>- {{ format_inr(-pnl.net_profit) }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Receivables Ageing Card -->
+  <div class="card glass stat-card">
+    <div>
+      <div class="stat-label">
+        <span>Receivables Ageing</span>
+        {{ icon('calendar', size=16, class='text-muted') }}
+      </div>
+      <div style="font-size: 13px; display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--sp-3);">
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-3);">Current / Not Due:</span>
+          <span class="tabular">{{ format_inr(ageing.summary.not_due) }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-3);">1-30 Days Overdue:</span>
+          <span class="tabular">{{ format_inr(ageing.summary.days_1_30) }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-3);">90+ Days Overdue:</span>
+          <span class="tabular">{{ format_inr(ageing.summary.days_90_plus) }}</span>
+        </div>
+      </div>
+    </div>
+    <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: var(--sp-2); display: flex; justify-content: space-between; align-items: baseline;">
+      <span style="font-size: 11px; text-transform: uppercase; color: var(--text-3); font-weight: 600;">Total Outstanding</span>
+      <span class="tabular" style="font-size: 18px; font-weight: 700; color: var(--text-1);">{{ format_inr(ageing.summary.total_outstanding) }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- GSTR-3B Tax Liability & Set-Off Table -->
+<div class="card glass" style="margin-bottom: var(--sp-6);">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4);">
+    <div>
+      <h2 style="font-size: var(--font-size-h3); color: var(--text-1);">GSTR-3B Tax Liability &amp; Set-Off Schedule</h2>
+      <p style="font-size: var(--font-size-caption); color: var(--text-3); margin-top: 2px;">
+        Statutory ITC set-off applied strictly in sequence: IGST, then CGST, then SGST.
+      </p>
+    </div>
+    <span class="chip chip-info" style="font-size: 11px;">Section 49 Statutory Order</span>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Tax Component</th>
+          <th class="text-right">Outward Tax (Liability)</th>
+          <th class="text-right">Input Tax Credit (ITC)</th>
+          <th class="text-right">Net Cash Payable</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span style="font-weight: 600; color: var(--text-1);">IGST (Integrated Tax)</span></td>
+          <td class="text-right tabular">{{ format_inr(gstr3b.outward_supplies.igst) }}</td>
+          <td class="text-right tabular" style="color: var(--ok);">{{ format_inr(gstr3b.itc_eligible.igst) }}</td>
+          <td class="text-right tabular" style="font-weight: 600;">{{ format_inr(gstr3b.set_off_summary.cash_payable_igst) }}</td>
+        </tr>
+        <tr>
+          <td><span style="font-weight: 600; color: var(--text-1);">CGST (Central Tax)</span></td>
+          <td class="text-right tabular">{{ format_inr(gstr3b.outward_supplies.cgst) }}</td>
+          <td class="text-right tabular" style="color: var(--ok);">{{ format_inr(gstr3b.itc_eligible.cgst) }}</td>
+          <td class="text-right tabular" style="font-weight: 600;">{{ format_inr(gstr3b.set_off_summary.cash_payable_cgst) }}</td>
+        </tr>
+        <tr>
+          <td><span style="font-weight: 600; color: var(--text-1);">SGST (State Tax)</span></td>
+          <td class="text-right tabular">{{ format_inr(gstr3b.outward_supplies.sgst) }}</td>
+          <td class="text-right tabular" style="color: var(--ok);">{{ format_inr(gstr3b.itc_eligible.sgst) }}</td>
+          <td class="text-right tabular" style="font-weight: 600;">{{ format_inr(gstr3b.set_off_summary.cash_payable_sgst) }}</td>
+        </tr>
+        <tr style="background: color-mix(in srgb, var(--maroon-1) 30%, transparent); font-weight: 600;">
+          <td>Total Net Cash Tax Payable</td>
+          <td class="text-right tabular">{{ format_inr(gstr3b.outward_supplies.total_tax) }}</td>
+          <td class="text-right tabular" style="color: var(--ok);">{{ format_inr(gstr3b.itc_eligible.total_itc) }}</td>
+          <td class="text-right tabular" style="color: var(--bad); font-size: 16px;">
+            {{ format_inr(gstr3b.set_off_summary.total_cash_payable) }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- HSN Summary Table -->
+<div class="card glass">
+  <div style="margin-bottom: var(--sp-4);">
+    <h2 style="font-size: var(--font-size-h3); color: var(--text-1);">HSN / SAC Summary Register</h2>
+    <p style="font-size: var(--font-size-caption); color: var(--text-3); margin-top: 2px;">
+      Classification breakdown by 4/6/8-digit HSN codes and GST tariff rate slabs.
+    </p>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>HSN / SAC Code</th>
+          <th class="text-right">GST Rate</th>
+          <th class="text-right">Total Qty</th>
+          <th class="text-right">Taxable Value</th>
+          <th class="text-right">CGST</th>
+          <th class="text-right">SGST</th>
+          <th class="text-right">IGST</th>
+          <th class="text-right">Total Tax</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if hsn and hsn.rows and hsn.rows|length > 0 %}
+          {% for r in hsn.rows %}
+            <tr>
+              <td><code style="font-size: 12px; color: var(--text-1); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">{{ r.hsn_sac }}</code></td>
+              <td class="text-right tabular">{{ r.gst_rate }}%</td>
+              <td class="text-right tabular">{{ '%.1f' % r.quantity }}</td>
+              <td class="text-right tabular">{{ format_inr(r.taxable) }}</td>
+              <td class="text-right tabular">{{ format_inr(r.cgst) }}</td>
+              <td class="text-right tabular">{{ format_inr(r.sgst) }}</td>
+              <td class="text-right tabular">{{ format_inr(r.igst) }}</td>
+              <td class="text-right tabular font-weight-600">{{ format_inr(r.total_tax) }}</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8" style="padding: 0;">
+              <div class="empty-state">
+                <div class="empty-state-icon">
+                  {{ icon('reports', size=24) }}
+                </div>
+                <h3>No HSN Entries</h3>
+                <p>Approved invoices with line items will populate this statutory tariff summary.</p>
+              </div>
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: Select Month & Year Before Generating Monthly Summary Report -->
+<div id="reportPeriodModal" class="modal-backdrop" style="display: none;">
+  <div class="modal card glass" style="max-width: 480px; width: 100%;" role="dialog" aria-labelledby="modalReportTitle">
+    <div class="modal-header">
+      <h3 id="modalReportTitle" class="modal-title">Generate Monthly Summary Report</h3>
+      <button type="button" class="modal-close" onclick="closeReportModal()" aria-label="Close modal">
+        {{ icon('close', size=16) }}
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 13.5px; color: var(--text-2); margin-bottom: var(--sp-4); line-height: 1.6;">
+        Specify the month and calendar year. Axion will load invoices from your saved collection for that period and produce an executive report with your business watermark.
+      </p>
+
+      <div class="grid-2" style="gap: var(--sp-3); margin-bottom: var(--sp-4);">
+        <div class="form-group">
+          <label for="rep_month_sel">Month</label>
+          <select id="rep_month_sel" class="select">
+            <option value="01">January</option>
+            <option value="02">February</option>
+            <option value="03">March</option>
+            <option value="04">April</option>
+            <option value="05">May</option>
+            <option value="06">June</option>
+            <option value="07">July</option>
+            <option value="08">August</option>
+            <option value="09">September</option>
+            <option value="10" selected>October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="rep_year_sel">Year</label>
+          <select id="rep_year_sel" class="select">
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="background: rgba(228, 253, 225, 0.50); border: 1px solid rgba(167, 220, 165, 0.40); border-radius: var(--r-sm); padding: 10px 12px; font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 8px;">
+        {{ icon('shield', size=16) }}
+        <span>Includes company watermark on bottom right of each page.</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="closeReportModal()">Cancel</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="generateReportFromModal()">
+        {{ icon('download', size=14) }}
+        <span>Generate &amp; Download PDF</span>
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openReportModal() {
+  const modal = document.getElementById('reportPeriodModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+function closeReportModal() {
+  const modal = document.getElementById('reportPeriodModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+function generateReportFromModal() {
+  const m = document.getElementById('rep_month_sel').value;
+  const y = document.getElementById('rep_year_sel').value;
+  const monthKey = `${y}-${m}`;
+  closeReportModal();
+  window.location.href = `/api/v1/reports/monthly-pdf?month=${monthKey}`;
+}
+</script>
+{% endblock %}
