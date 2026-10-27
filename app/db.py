@@ -1,7 +1,14 @@
 from collections.abc import Generator
+from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from app.config import settings
+
+# Ensure database directory exists before connecting (especially in Linux/Docker/Render)
+if settings.DATABASE_URL.startswith("sqlite:///"):
+    db_path_str = settings.DATABASE_URL.replace("sqlite:///", "")
+    if db_path_str and db_path_str != ":memory:":
+        Path(db_path_str).parent.mkdir(parents=True, exist_ok=True)
 
 # Engine setup
 connect_args = {}

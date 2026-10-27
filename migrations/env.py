@@ -37,6 +37,12 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
+    # Ensure database directory exists before connecting (especially in Linux/Docker/Render)
+    if settings.DATABASE_URL.startswith("sqlite:///"):
+        db_path_str = settings.DATABASE_URL.replace("sqlite:///", "")
+        if db_path_str and db_path_str != ":memory:":
+            Path(db_path_str).parent.mkdir(parents=True, exist_ok=True)
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

@@ -16,7 +16,13 @@ setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Ensure DB tables exist and start scheduler
+    # Startup: Ensure DB & runtime directories exist, create tables, start scheduler
+    from pathlib import Path
+    Path("data").mkdir(parents=True, exist_ok=True)
+    Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
+    Path(settings.BACKUP_DIR).mkdir(parents=True, exist_ok=True)
+    Path(settings.LOG_DIR).mkdir(parents=True, exist_ok=True)
+
     from app.db import engine, Base
     import app.models
     Base.metadata.create_all(bind=engine)

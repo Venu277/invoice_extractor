@@ -23,11 +23,15 @@ data/*.sqlite
 data/*.sqlite3
 *.db
 *.sqlite3
+!data/.gitkeep
 
 # Uploads, Logs, and Runtime Artifacts
-logs/
-uploads/
-backups/
+logs/*
+!logs/.gitkeep
+uploads/*
+!uploads/.gitkeep
+backups/*
+!backups/.gitkeep
 output/
 outputs/
 screenshots/
