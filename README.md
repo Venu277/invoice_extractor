@@ -1,6 +1,7 @@
 # Axion
 
 **Intelligent invoice extraction and GST management for small Indian businesses.**
+** python programming mini project **
 
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
