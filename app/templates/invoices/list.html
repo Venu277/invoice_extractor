@@ -20,7 +20,7 @@
 </div>
 
 <!-- Two Section Segmented Switcher: Current Invoices vs Saved Collections -->
-<div style="display: flex; gap: var(--sp-2); margin-bottom: var(--sp-6); border-bottom: 1px solid rgba(167, 220, 165, 0.35); padding-bottom: var(--sp-3);">
+<div style="display: flex; gap: var(--sp-2); margin-bottom: var(--sp-6); border-bottom: 1px solid rgba(123, 51, 126, 0.30); padding-bottom: var(--sp-3);">
   <a href="/invoices?view=current" class="btn {% if view == 'current' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm" style="border-radius: var(--r-pill); padding: 8px 18px; font-weight: 600;">
     {{ icon('invoices', size=15) }}
     <span>Current Invoices</span>
@@ -67,7 +67,7 @@
             </div>
           </div>
 
-          <div style="border-top: 1px solid rgba(167, 220, 165, 0.30); padding-top: var(--sp-3); margin-top: var(--sp-4); display: flex; justify-content: space-between; align-items: baseline;">
+          <div style="border-top: 1px solid rgba(123, 51, 126, 0.25); padding-top: var(--sp-3); margin-top: var(--sp-4); display: flex; justify-content: space-between; align-items: baseline;">
             <div>
               <span style="font-size: 11px; text-transform: uppercase; color: var(--text-3); font-weight: 600; display: block;">Total Amount</span>
               <span class="tabular font-weight-600" style="font-size: 18px; color: var(--text-1);">
@@ -105,7 +105,7 @@
 
 <!-- Active Collection Banner (if inspecting a saved collection) -->
 {% if selected_collection %}
-<div class="card glass" style="margin-bottom: var(--sp-6); padding: var(--sp-5) var(--sp-6); background: rgba(228, 253, 225, 0.60); border: 1px solid rgba(144, 207, 142, 0.70);">
+<div class="card glass" style="margin-bottom: var(--sp-6); padding: var(--sp-5) var(--sp-6); background: rgba(66, 13, 75, 0.55); border: 1px solid rgba(123, 51, 126, 0.65);">
   <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sp-3);">
     <div style="display: flex; align-items: center; gap: var(--sp-3);">
       <a href="/invoices?view=collections" class="btn btn-ghost btn-sm" title="Back to collections list">
@@ -237,7 +237,7 @@
               {{ inv.party.name if inv.party else 'Unknown' }}
             </td>
             <td>
-              <code style="font-size: 12px; color: var(--text-2); background: rgba(255,255,255,0.70); border: 1px solid rgba(167,220,165,0.30); padding: 2px 6px; border-radius: 4px;">
+              <code style="font-size: 12px; color: var(--text-2); background: rgba(33, 6, 53, 0.65); border: 1px solid rgba(102, 103, 171, 0.30); padding: 2px 6px; border-radius: 4px;">
                 {{ inv.supplier_gstin or inv.buyer_gstin or '-' }}
               </code>
             </td>

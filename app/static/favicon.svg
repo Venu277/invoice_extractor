@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
     <linearGradient id="axion-bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#c6edc3" />
-      <stop offset="100%" stop-color="#effdee" />
+      <stop offset="0%" stop-color="#420D4B" />
+      <stop offset="100%" stop-color="#210635" />
     </linearGradient>
     <linearGradient id="axion-accent" x1="16" y1="12" x2="48" y2="52" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#90cf8e" />
-      <stop offset="50%" stop-color="#a7dca5" />
-      <stop offset="100%" stop-color="#2d7a37" />
+      <stop offset="0%" stop-color="#F5D5E0" />
+      <stop offset="50%" stop-color="#6667AB" />
+      <stop offset="100%" stop-color="#7B337E" />
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="18" fill="url(#axion-bg)" stroke="#a7dca5" stroke-width="1.5" />
+  <rect width="64" height="64" rx="18" fill="url(#axion-bg)" stroke="#7B337E" stroke-width="1.5" />
   <!-- Abstract architectural A mark -->
   <path d="M32 14L48 48H39.5L34.8 37H29.2L24.5 48H16L32 14Z" fill="url(#axion-accent)" />
-  <polygon points="32,23.5 27.5,33 36.5,33" fill="#effdee" />
-  <circle cx="32" cy="14" r="2" fill="#0e2213" />
+  <polygon points="32,23.5 27.5,33 36.5,33" fill="#210635" />
+  <circle cx="32" cy="14" r="2" fill="#F5D5E0" />
 </svg>

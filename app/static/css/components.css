@@ -1,5 +1,5 @@
 /* Axion Component System & Application Shell
-   Light mode frosted liquid glass surfaces, squircles, sidebar navigation, buttons, inputs, tables & modals.
+   Moon Dark Mode Theme: Frosted liquid plum/orchid glass surfaces, squircles, sidebar navigation, buttons, inputs, tables & modals.
 */
 
 /* -------------------------------------------------------------
@@ -17,9 +17,9 @@
 .sidebar-scrim {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(14, 34, 19, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(10, 2, 18, 0.70);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 99;
   display: none;
   opacity: 0;
@@ -31,14 +31,14 @@
   opacity: 1;
 }
 
-/* Collapsible Frosted Glass Sidebar with Fresh Green Tint */
+/* Collapsible Frosted Glass Sidebar with Dark Moon Plum Tint */
 .sidebar {
   width: var(--sidebar-w-expanded);
-  background: linear-gradient(180deg, rgba(239, 253, 238, 0.94) 0%, rgba(228, 253, 225, 0.96) 100%);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border-right: 1px solid rgba(167, 220, 165, 0.40);
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.90), 8px 0 28px rgba(25, 55, 28, 0.05);
+  background: linear-gradient(180deg, rgba(33, 6, 53, 0.94) 0%, rgba(24, 3, 38, 0.97) 100%);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border-right: 1px solid rgba(123, 51, 126, 0.30);
+  box-shadow: inset -1px 0 0 rgba(245, 213, 224, 0.08), 8px 0 32px rgba(10, 2, 18, 0.45);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -58,7 +58,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(167, 220, 165, 0.30);
+  border-bottom: 1px solid rgba(123, 51, 126, 0.25);
   min-height: 68px;
   flex-shrink: 0;
 }
@@ -76,13 +76,19 @@
   width: 36px;
   height: 36px;
   border-radius: var(--r-sm);
-  background: linear-gradient(135deg, var(--pistachio), var(--celadon));
-  border: 1px solid rgba(144, 207, 142, 0.85);
-  box-shadow: 0 4px 14px rgba(144, 207, 142, 0.35);
+  background: linear-gradient(135deg, var(--moon-orchid), var(--moon-plum));
+  border: 1px solid rgba(245, 213, 224, 0.35);
+  box-shadow: 0 4px 16px rgba(123, 51, 126, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: transform var(--dur-fast) var(--ease-apple), box-shadow var(--dur-fast) var(--ease-apple);
+}
+
+.brand-block:hover .brand-mark {
+  transform: scale(1.06);
+  box-shadow: 0 0 22px rgba(123, 51, 126, 0.70);
 }
 
 .brand-text {
@@ -111,7 +117,7 @@
 /* Single Collapse Toggle Button in Sidebar Header */
 .sidebar-toggle-btn {
   background: transparent;
-  border: 1px solid rgba(167, 220, 165, 0.45);
+  border: 1px solid rgba(102, 103, 171, 0.35);
   color: var(--text-2);
   width: 32px;
   height: 32px;
@@ -125,9 +131,10 @@
 }
 
 .sidebar-toggle-btn:hover {
-  background: rgba(198, 237, 195, 0.45);
+  background: rgba(102, 103, 171, 0.25);
   color: var(--text-1);
-  border-color: rgba(144, 207, 142, 0.70);
+  border-color: rgba(123, 51, 126, 0.60);
+  box-shadow: 0 0 12px rgba(123, 51, 126, 0.35);
 }
 
 /* Sidebar Nav Groups & Items */
@@ -169,16 +176,17 @@
 }
 
 .nav-item:hover {
-  background: rgba(198, 237, 195, 0.35);
+  background: rgba(102, 103, 171, 0.20);
   color: var(--text-1);
+  transform: translateX(2px);
 }
 
 .nav-item.active {
-  background: linear-gradient(90deg, rgba(144, 207, 142, 0.32), rgba(228, 253, 225, 0.20));
+  background: linear-gradient(90deg, rgba(123, 51, 126, 0.45), rgba(66, 13, 75, 0.30));
   color: var(--text-1);
   font-weight: 600;
-  border: 1px solid rgba(144, 207, 142, 0.65);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.90);
+  border: 1px solid rgba(123, 51, 126, 0.65);
+  box-shadow: inset 0 1px 0 rgba(245, 213, 224, 0.15), 0 0 20px rgba(123, 51, 126, 0.30);
 }
 
 .nav-item.active::before {
@@ -189,8 +197,8 @@
   bottom: 8px;
   width: 3px;
   border-radius: var(--r-pill);
-  background: var(--red-accent);
-  box-shadow: 0 0 8px rgba(27, 90, 38, 0.35);
+  background: var(--moon-blush);
+  box-shadow: 0 0 12px var(--moon-orchid), 0 0 4px var(--moon-blush);
 }
 
 .nav-icon {
@@ -201,6 +209,12 @@
   width: 20px;
   height: 20px;
   color: inherit;
+  transition: transform var(--dur-fast) var(--ease-apple);
+}
+
+.nav-item:hover .nav-icon {
+  transform: scale(1.12);
+  color: var(--moon-blush);
 }
 
 .nav-label {
@@ -213,13 +227,13 @@
 /* Sidebar Footer & Pinned User / Logout */
 .sidebar-footer {
   padding: var(--sp-3) var(--sp-3);
-  border-top: 1px solid rgba(167, 220, 165, 0.30);
+  border-top: 1px solid rgba(123, 51, 126, 0.25);
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
   margin-top: auto;
   flex-shrink: 0;
-  background: rgba(239, 253, 238, 0.85);
+  background: rgba(24, 3, 38, 0.85);
 }
 
 .user-profile {
@@ -229,14 +243,16 @@
   padding: 6px 8px;
   border-radius: var(--r-md);
   overflow: hidden;
+  background: rgba(66, 13, 75, 0.35);
+  border: 1px solid rgba(102, 103, 171, 0.25);
 }
 
 .user-avatar {
   width: 32px;
   height: 32px;
   border-radius: var(--r-pill);
-  background: rgba(198, 237, 195, 0.55);
-  border: 1px solid rgba(167, 220, 165, 0.50);
+  background: rgba(123, 51, 126, 0.40);
+  border: 1px solid rgba(245, 213, 224, 0.30);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -285,7 +301,7 @@
 }
 
 .logout-btn:hover {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(248, 113, 113, 0.16);
   color: var(--bad);
 }
 
@@ -321,6 +337,8 @@
 .sidebar.collapsed .user-profile {
   justify-content: center;
   padding: 4px 0;
+  background: transparent;
+  border-color: transparent;
 }
 
 .sidebar.collapsed .logout-btn {
@@ -335,14 +353,14 @@
   left: calc(100% + 12px);
   top: 50%;
   transform: translateY(-50%);
-  background: var(--honeydew);
+  background: var(--maroon-2);
   border: var(--glass-border);
   color: var(--text-1);
   font-size: 12px;
   font-weight: 500;
   padding: 6px 12px;
   border-radius: var(--r-sm);
-  box-shadow: 0 8px 24px rgba(25, 55, 28, 0.12);
+  box-shadow: 0 8px 24px rgba(10, 2, 18, 0.50);
   white-space: nowrap;
   pointer-events: none;
   z-index: 1000;
@@ -355,7 +373,7 @@
     top: 0; bottom: 0; left: 0;
     width: var(--sidebar-w-expanded) !important;
     transform: translateX(-100%);
-    box-shadow: 0 0 60px rgba(25, 55, 28, 0.35);
+    box-shadow: 0 0 60px rgba(10, 2, 18, 0.75);
   }
 
   .sidebar.mobile-open {
@@ -383,6 +401,21 @@
   width: 100%;
 }
 
+.main-content > * {
+  animation: fadeSlideUp 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 768px) {
   .main-content {
     padding: var(--sp-5) var(--sp-4);
@@ -395,8 +428,8 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-4) var(--sp-5);
-  border-bottom: 1px solid rgba(167, 220, 165, 0.35);
-  background: var(--honeydew);
+  border-bottom: 1px solid rgba(123, 51, 126, 0.30);
+  background: var(--maroon-3);
   position: sticky;
   top: 0;
   z-index: 80;
@@ -469,7 +502,7 @@
   border-radius: inherit;
   background: radial-gradient(
     circle 320px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(255, 255, 255, 0.40),
+    rgba(245, 213, 224, 0.12),
     transparent 80%
   );
   pointer-events: none;
@@ -483,11 +516,11 @@
 }
 
 .glass-interactive:hover {
-  transform: translateY(-2px);
-  border-color: rgba(144, 207, 142, 0.70);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95),
-              0 20px 48px rgba(25, 55, 28, 0.08),
-              0 0 24px rgba(144, 207, 142, 0.28);
+  transform: translateY(-3px);
+  border-color: rgba(123, 51, 126, 0.65);
+  box-shadow: inset 0 1px 0 rgba(245, 213, 224, 0.20),
+              0 22px 50px rgba(10, 2, 18, 0.60),
+              0 0 28px rgba(123, 51, 126, 0.35);
 }
 
 .card {
@@ -499,6 +532,7 @@
   box-shadow: var(--glass-shadow);
   border-radius: var(--r-lg);
   position: relative;
+  transition: transform var(--dur-fast) var(--ease-apple), box-shadow var(--dur-fast) var(--ease-apple), border-color var(--dur-fast) var(--ease-apple);
 }
 
 /* -------------------------------------------------------------
@@ -521,6 +555,8 @@
   transition: all var(--dur-fast) var(--ease-apple);
   white-space: nowrap;
   user-select: none;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn:disabled {
@@ -530,63 +566,67 @@
 }
 
 .btn-primary {
-  background: var(--pistachio);
-  color: var(--text-1);
+  background: linear-gradient(135deg, var(--moon-orchid) 0%, var(--moon-plum) 100%);
+  color: var(--moon-blush);
   font-weight: 600;
-  border: 1px solid rgba(27, 90, 38, 0.22);
-  box-shadow: 0 4px 14px rgba(144, 207, 142, 0.45),
-              inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(245, 213, 224, 0.30);
+  box-shadow: 0 4px 18px rgba(123, 51, 126, 0.45),
+              inset 0 1px 0 rgba(245, 213, 224, 0.25);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--celadon);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(144, 207, 142, 0.60),
-              inset 0 1px 0 rgba(255, 255, 255, 0.80);
-  color: var(--text-1);
+  background: linear-gradient(135deg, var(--red-600) 0%, var(--moon-orchid) 100%);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 26px rgba(123, 51, 126, 0.65),
+              0 0 20px rgba(102, 103, 171, 0.40),
+              inset 0 1px 0 rgba(245, 213, 224, 0.40);
+  color: var(--moon-blush);
 }
 
 .btn-primary:active:not(:disabled) {
-  background: var(--tea-green);
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(66, 13, 75, 0.50);
   color: var(--text-1);
-  border: var(--glass-border);
+  border: 1px solid rgba(102, 103, 171, 0.40);
   box-shadow: var(--glass-shadow-sm);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--nyanza);
-  border-color: rgba(144, 207, 142, 0.65);
-  transform: translateY(-1px);
+  background: rgba(102, 103, 171, 0.25);
+  border-color: rgba(245, 213, 224, 0.40);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(10, 2, 18, 0.40), 0 0 16px rgba(102, 103, 171, 0.30);
   color: var(--text-1);
 }
 
 .btn-ghost {
   background: transparent;
   color: var(--text-2);
-  border: 1px solid rgba(167, 220, 165, 0.45);
+  border: 1px solid rgba(102, 103, 171, 0.35);
 }
 
 .btn-ghost:hover:not(:disabled) {
-  background: rgba(198, 237, 195, 0.35);
+  background: rgba(102, 103, 171, 0.20);
   color: var(--text-1);
-  border-color: rgba(144, 207, 142, 0.60);
+  border-color: rgba(123, 51, 126, 0.60);
+  transform: translateY(-1px);
 }
 
 .btn-danger {
-  background: rgba(254, 226, 226, 0.90);
+  background: rgba(248, 113, 113, 0.20);
   color: var(--bad);
-  border: 1px solid rgba(185, 28, 28, 0.30);
+  border: 1px solid rgba(248, 113, 113, 0.40);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: rgba(254, 202, 202, 0.95);
-  border-color: rgba(185, 28, 28, 0.50);
+  background: rgba(248, 113, 113, 0.30);
+  border-color: rgba(248, 113, 113, 0.65);
   color: var(--bad);
+  transform: translateY(-1px);
+  box-shadow: 0 0 16px rgba(248, 113, 113, 0.35);
 }
 
 .btn-sm {
@@ -626,12 +666,12 @@ input[type="month"],
 input[type="date"],
 select,
 textarea {
-  color-scheme: light;
+  color-scheme: dark;
   font-family: var(--font-family);
   font-size: var(--font-size-body);
   color: var(--text-1);
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(167, 220, 165, 0.55);
+  background: rgba(33, 6, 53, 0.65);
+  border: 1px solid rgba(102, 103, 171, 0.35);
   border-radius: var(--r-sm);
   padding: 10px 14px;
   outline: none;
@@ -648,9 +688,9 @@ input[type="month"]:focus,
 input[type="date"]:focus,
 select:focus,
 textarea:focus {
-  border-color: var(--red-accent);
-  box-shadow: 0 0 0 3px rgba(144, 207, 142, 0.40);
-  background: rgba(255, 255, 255, 0.98);
+  border-color: var(--moon-orchid);
+  box-shadow: 0 0 0 3px rgba(123, 51, 126, 0.35), 0 0 16px rgba(123, 51, 126, 0.25);
+  background: rgba(42, 8, 64, 0.85);
 }
 
 .input::placeholder,
@@ -669,7 +709,7 @@ input[type="date"] {
 input[type="month"]::-webkit-calendar-picker-indicator,
 input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
-  opacity: 0.65;
+  opacity: 0.75;
   transition: opacity var(--dur-fast) var(--ease-apple);
 }
 
@@ -680,7 +720,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 /* Dropdown Options */
 select option {
-  background: var(--honeydew);
+  background: var(--moon-space);
   color: var(--text-1);
 }
 
@@ -713,16 +753,20 @@ table thead th,
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(167, 220, 165, 0.40);
+  border-bottom: 1px solid rgba(123, 51, 126, 0.35);
   white-space: nowrap;
 }
 
 table tbody td,
 .table tbody td {
   padding: 14px 16px;
-  border-bottom: 1px solid rgba(167, 220, 165, 0.22);
+  border-bottom: 1px solid rgba(123, 51, 126, 0.18);
   color: var(--text-2);
   font-size: var(--font-size-body);
+}
+
+table tbody tr {
+  transition: background-color var(--dur-fast) var(--ease-apple);
 }
 
 table tbody tr:hover,
@@ -749,25 +793,25 @@ table tbody tr:hover,
 .chip-ok {
   background: var(--ok-bg);
   color: var(--ok);
-  border: 1px solid rgba(27, 102, 41, 0.30);
+  border: 1px solid rgba(74, 222, 128, 0.35);
 }
 
 .chip-warn {
   background: var(--warn-bg);
   color: var(--warn);
-  border: 1px solid rgba(146, 64, 14, 0.30);
+  border: 1px solid rgba(251, 191, 36, 0.35);
 }
 
 .chip-bad {
   background: var(--bad-bg);
   color: var(--bad);
-  border: 1px solid rgba(185, 28, 28, 0.30);
+  border: 1px solid rgba(248, 113, 113, 0.35);
 }
 
 .chip-info {
   background: var(--info-bg);
   color: var(--info);
-  border: 1px solid rgba(29, 78, 216, 0.30);
+  border: 1px solid rgba(129, 140, 248, 0.35);
 }
 
 .chip-sales {
@@ -794,9 +838,9 @@ table tbody tr:hover,
   text-transform: uppercase;
 }
 
-.badge-ok, .badge-paid, .badge-approved { background: var(--ok-bg); color: var(--ok); border: 1px solid rgba(27, 102, 41, 0.30); }
-.badge-warnings, .badge-partial, .badge-pending, .badge-pending_review { background: var(--warn-bg); color: var(--warn); border: 1px solid rgba(146, 64, 14, 0.30); }
-.badge-errors, .badge-unpaid, .badge-rejected { background: var(--bad-bg); color: var(--bad); border: 1px solid rgba(185, 28, 28, 0.30); }
+.badge-ok, .badge-paid, .badge-approved { background: var(--ok-bg); color: var(--ok); border: 1px solid rgba(74, 222, 128, 0.35); }
+.badge-warnings, .badge-partial, .badge-pending, .badge-pending_review { background: var(--warn-bg); color: var(--warn); border: 1px solid rgba(251, 191, 36, 0.35); }
+.badge-errors, .badge-unpaid, .badge-rejected { background: var(--bad-bg); color: var(--bad); border: 1px solid rgba(248, 113, 113, 0.35); }
 
 /* -------------------------------------------------------------
    8. Alert Boxes & Status Banners
@@ -810,8 +854,8 @@ table tbody tr:hover,
   margin-bottom: var(--sp-4);
   font-size: var(--font-size-sm);
   line-height: 1.5;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(167, 220, 165, 0.45);
+  background: rgba(42, 8, 64, 0.75);
+  border: 1px solid rgba(123, 51, 126, 0.35);
   box-shadow: var(--glass-shadow-sm);
 }
 
@@ -843,6 +887,12 @@ table tbody tr:hover,
   flex-direction: column;
   justify-content: space-between;
   min-height: 128px;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(123, 51, 126, 0.55);
+  box-shadow: 0 14px 34px rgba(10, 2, 18, 0.55), 0 0 24px rgba(123, 51, 126, 0.28);
 }
 
 .stat-label {
@@ -887,7 +937,7 @@ table tbody tr:hover,
   width: 100%;
   border-radius: var(--r-pill);
   overflow: hidden;
-  background: rgba(167, 220, 165, 0.35);
+  background: rgba(66, 13, 75, 0.45);
   margin: var(--sp-3) 0 var(--sp-2);
 }
 
@@ -925,38 +975,51 @@ table tbody tr:hover,
 /* -------------------------------------------------------------
    10. File Upload Drop Zone
    ------------------------------------------------------------- */
+@keyframes breatheDrop {
+  0%, 100% { border-color: rgba(102, 103, 171, 0.40); }
+  50% { border-color: rgba(123, 51, 126, 0.75); }
+}
+
 .drop-zone {
-  border: 2px dashed rgba(167, 220, 165, 0.70);
+  border: 2px dashed rgba(102, 103, 171, 0.50);
   border-radius: var(--r-lg);
   padding: var(--sp-10) var(--sp-6);
   text-align: center;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.80), rgba(228, 253, 225, 0.40));
+  background: linear-gradient(135deg, rgba(42, 8, 64, 0.60), rgba(33, 6, 53, 0.80));
   cursor: pointer;
-  transition: all var(--dur-fast) var(--ease-apple);
+  transition: all var(--dur-normal) var(--ease-apple);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--sp-3);
+  animation: breatheDrop 4s infinite ease-in-out;
 }
 
 .drop-zone:hover,
 .drop-zone.dragover {
-  border-color: var(--red-accent);
-  background: rgba(228, 253, 225, 0.80);
-  box-shadow: 0 0 32px rgba(144, 207, 142, 0.35);
+  border-color: var(--moon-orchid);
+  background: rgba(66, 13, 75, 0.50);
+  box-shadow: 0 0 36px rgba(123, 51, 126, 0.45);
+  transform: scale(1.008);
 }
 
 .drop-zone-icon {
   width: 52px;
   height: 52px;
   border-radius: var(--r-md);
-  background: rgba(198, 237, 195, 0.50);
-  border: 1px solid rgba(167, 220, 165, 0.40);
+  background: rgba(66, 13, 75, 0.55);
+  border: 1px solid rgba(102, 103, 171, 0.40);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--red-accent);
+  color: var(--moon-blush);
+  transition: transform var(--dur-fast) var(--ease-apple);
+}
+
+.drop-zone:hover .drop-zone-icon {
+  transform: scale(1.10);
+  color: var(--moon-blush);
 }
 
 /* -------------------------------------------------------------
@@ -965,14 +1028,20 @@ table tbody tr:hover,
 .modal-backdrop {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(14, 34, 19, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(10, 2, 18, 0.70);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--sp-4);
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal {
@@ -980,14 +1049,20 @@ table tbody tr:hover,
   max-width: 540px;
   border-radius: var(--r-lg);
   border: var(--glass-border);
-  box-shadow: 0 24px 64px rgba(25, 55, 28, 0.16);
+  box-shadow: 0 24px 64px rgba(10, 2, 18, 0.70), 0 0 32px rgba(123, 51, 126, 0.30);
   overflow: hidden;
-  background: var(--honeydew);
+  background: var(--maroon-2);
+  animation: modalSlideUp 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes modalSlideUp {
+  from { transform: translateY(16px) scale(0.97); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 .modal-header {
   padding: var(--sp-4) var(--sp-5);
-  border-bottom: 1px solid rgba(167, 220, 165, 0.35);
+  border-bottom: 1px solid rgba(123, 51, 126, 0.30);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1013,7 +1088,7 @@ table tbody tr:hover,
 }
 
 .modal-close:hover {
-  background: rgba(198, 237, 195, 0.40);
+  background: rgba(102, 103, 171, 0.25);
   color: var(--text-1);
 }
 
@@ -1023,7 +1098,7 @@ table tbody tr:hover,
 
 .modal-footer {
   padding: var(--sp-4) var(--sp-5);
-  border-top: 1px solid rgba(167, 220, 165, 0.35);
+  border-top: 1px solid rgba(123, 51, 126, 0.30);
   display: flex;
   justify-content: flex-end;
   gap: var(--sp-3);
@@ -1045,12 +1120,12 @@ table tbody tr:hover,
   width: 48px;
   height: 48px;
   border-radius: var(--r-pill);
-  background: rgba(198, 237, 195, 0.50);
-  border: 1px solid rgba(167, 220, 165, 0.50);
+  background: rgba(66, 13, 75, 0.50);
+  border: 1px solid rgba(102, 103, 171, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--red-accent);
+  color: var(--moon-blush);
   margin-bottom: var(--sp-3);
 }
 
@@ -1111,7 +1186,7 @@ table tbody tr:hover,
 }
 
 .pdf-viewer-pane {
-  background: var(--honeydew);
+  background: var(--maroon-2);
   border: var(--glass-border);
   border-radius: var(--r-lg);
   overflow: hidden;

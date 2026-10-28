@@ -1,5 +1,5 @@
 /* Axion Base Styles & CSS Reset
-   Clean Apple-inspired baseline, light mode ambient glows, typography & accessibility.
+   Clean Apple-inspired baseline, Moon dark mode ambient glows, typography & accessibility.
 */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -11,7 +11,7 @@
 }
 
 html {
-  color-scheme: light;
+  color-scheme: dark;
   font-family: var(--font-family);
   font-size: 15px;
   line-height: 1.5;
@@ -25,12 +25,12 @@ html {
 }
 
 body {
-  color-scheme: light;
+  color-scheme: dark;
   min-height: 100vh;
   background-color: var(--black);
   background-image:
-    radial-gradient(ellipse 80% 50% at 20% -10%, color-mix(in srgb, var(--tea-green) 50%, transparent), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 85% 100%, color-mix(in srgb, var(--celadon) 40%, transparent), transparent 70%),
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(123, 51, 126, 0.28), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 85% 100%, rgba(102, 103, 171, 0.22), transparent 70%),
     linear-gradient(to bottom, var(--black), var(--maroon-3));
   background-attachment: fixed;
   color: var(--text-1);
@@ -86,9 +86,9 @@ a:hover {
 
 /* Accessibility: Focus Rings */
 :focus-visible {
-  outline: 2px solid var(--red-accent);
+  outline: 2px solid var(--red-700);
   outline-offset: 3px;
-  box-shadow: 0 0 16px rgba(144, 207, 142, 0.50);
+  box-shadow: 0 0 18px rgba(123, 51, 126, 0.60);
 }
 
 /* Tabular figures for all money & numbers */
@@ -97,13 +97,13 @@ a:hover {
   letter-spacing: -0.01em;
 }
 
-/* Form Controls & Pickers: Force Light Rendering */
+/* Form Controls & Pickers: Dark Rendering */
 input, select, textarea, button {
-  color-scheme: light;
+  color-scheme: dark;
   font-family: inherit;
 }
 
-/* Custom Light Frosted Glass Scrollbar */
+/* Custom Frosted Dark Moon Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -120,7 +120,7 @@ input, select, textarea, button {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--red-900);
+  background: var(--red-700);
 }
 
 /* High Contrast & Reduced Motion Preferences */

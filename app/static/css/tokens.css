@@ -1,60 +1,68 @@
 /* Axion Design System Tokens
-   Light mode theme using user palette:
-   - Pistachio: #90cf8e
-   - Celadon:   #a7dca5
-   - Tea green: #c6edc3
-   - Nyanza:    #e4fde1
-   - Honeydew:  #effdee
+   Moon Dark Mode Theme
+   Palette:
+   - Moon Blush:      #F5D5E0 (Lightest pearl highlight / high-contrast text)
+   - Moon Periwinkle: #6667AB (Cosmic slate lavender / interactive & link accent)
+   - Moon Orchid:     #7B337E (Royal orchid purple / primary accent CTA / glow)
+   - Moon Plum:       #420D4B (Deep plum amethyst / raised surfaces / card layers)
+   - Moon Space:      #210635 (Obsidian abyss plum / background backdrop base)
 */
 
 :root {
-  /* User-Selected Palette */
-  --pistachio: #90cf8e;
-  --celadon: #a7dca5;
-  --tea-green: #c6edc3;
-  --nyanza: #e4fde1;
-  --honeydew: #effdee;
+  /* Moon Palette Colors */
+  --moon-blush: #F5D5E0;
+  --moon-periwinkle: #6667AB;
+  --moon-orchid: #7B337E;
+  --moon-plum: #420D4B;
+  --moon-space: #210635;
 
-  /* Aliased Surface & Accent Tokens (Mapped to Light Mode) */
-  --black: #effdee;        /* Page backdrop base (Honeydew) */
-  --maroon-3: #effdee;     /* App background / sidebar base */
-  --maroon-2: #e4fde1;     /* Glass panel / card tint (Nyanza) */
-  --maroon-1: #c6edc3;     /* Raised surfaces / table headers (Tea green) */
-  --red-900: #a7dca5;      /* Selected surfaces / borders (Celadon) */
-  --red-800: #7cbd7a;      /* Pressed states / secondary chart */
-  --red-700: #2d7a37;      /* Secondary dark accent */
-  --red-600: #256b30;      /* Button hover / active nav indicator */
-  --red-500: #90cf8e;      /* Primary accent (Pistachio) */
+  /* Backward Compatibility Aliases for Templates */
+  --pistachio: #7B337E;
+  --celadon: #6667AB;
+  --tea-green: #420D4B;
+  --nyanza: #2c0a42;
+  --honeydew: #210635;
 
-  /* High-Contrast Accessible Text & Links (Contrast >= 4.5:1 on light backgrounds) */
-  --red-accent: #1b5a26;
-  --red-accent-hover: #12441a;
+  /* Surfaces & Structural Tokens (Dark Mode) */
+  --black: #210635;             /* Page backdrop base (Moon Space) */
+  --maroon-3: #180326;          /* App canvas backdrop / sidebar deepest base */
+  --maroon-2: #28073d;          /* Card & panel surface tint */
+  --maroon-1: #420D4B;          /* Moon Plum raised surfaces / header blocks */
+  --red-900: #551260;           /* Borders / selected surface outlines */
+  --red-800: #6b1979;           /* Secondary active / pressed states */
+  --red-700: #7B337E;           /* Royal orchid accent */
+  --red-600: #8f3d93;           /* Bright orchid hover */
+  --red-500: #7B337E;           /* Primary brand accent */
 
-  /* Neutrals & Text Hierarchy */
-  --text-1: #0e2213;                     /* Deep forest charcoal - contrast 14:1 on Honeydew */
-  --text-2: rgba(14, 34, 19, 0.78);     /* Crisp body text - contrast 7.5:1 */
-  --text-3: rgba(14, 34, 19, 0.54);     /* Clear captions & metadata - contrast 4.6:1 */
+  /* Text & Interactive Accents */
+  --red-accent: #6667AB;        /* Links & interactive items */
+  --red-accent-hover: #F5D5E0;  /* Hover state */
 
-  /* Status Colors (Semantic on light surfaces) */
-  --ok: #1b6629;
-  --warn: #92400e;
-  --bad: #b91c1c;
-  --info: #1d4ed8;
+  /* Neutrals & Text Hierarchy (High-contrast, accessible on dark) */
+  --text-1: #F5D5E0;                     /* Crisp Moon Blush pearl - contrast > 11:1 */
+  --text-2: rgba(245, 213, 224, 0.82);   /* Clear body text */
+  --text-3: rgba(245, 213, 224, 0.52);   /* Metadata, captions, placeholders */
 
-  /* Status Background Tints (Light pastel glass fills) */
-  --ok-bg: rgba(144, 207, 142, 0.25);
-  --warn-bg: rgba(254, 243, 199, 0.85);
-  --bad-bg: rgba(254, 226, 226, 0.85);
-  --info-bg: rgba(219, 234, 254, 0.85);
+  /* Semantic Status Colors (Tailored for dark surfaces) */
+  --ok: #4ade80;
+  --warn: #facc15;
+  --bad: #f87171;
+  --info: #818cf8;
+
+  /* Status Background Tints */
+  --ok-bg: rgba(74, 222, 128, 0.16);
+  --warn-bg: rgba(250, 204, 21, 0.16);
+  --bad-bg: rgba(248, 113, 113, 0.18);
+  --info-bg: rgba(129, 140, 248, 0.18);
 
   /* Direction Chips */
-  --chip-sales-bg: rgba(144, 207, 142, 0.28);
-  --chip-sales-color: #12481b;
-  --chip-sales-border: rgba(144, 207, 142, 0.65);
+  --chip-sales-bg: rgba(123, 51, 126, 0.35);
+  --chip-sales-color: #F5D5E0;
+  --chip-sales-border: rgba(123, 51, 126, 0.70);
 
-  --chip-purchase-bg: rgba(198, 237, 195, 0.35);
-  --chip-purchase-color: #164f21;
-  --chip-purchase-border: rgba(167, 220, 165, 0.65);
+  --chip-purchase-bg: rgba(102, 103, 171, 0.30);
+  --chip-purchase-color: #F5D5E0;
+  --chip-purchase-border: rgba(102, 103, 171, 0.65);
 
   /* Squircles & Radii */
   --r-sm: 10px;
@@ -63,7 +71,7 @@
   --r-xl: 32px;
   --r-pill: 9999px;
 
-  /* 4px Base Spacing Scale */
+  /* Spacing Scale */
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
@@ -92,24 +100,24 @@
   --dur-normal: 250ms;
   --dur-slow: 400ms;
 
-  /* Liquid Glass Recipe Components (Frosted Light Glass) */
-  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(228, 253, 225, 0.60) 45%),
-              rgba(255, 255, 255, 0.70);
-  --glass-blur: blur(20px) saturate(160%);
-  --glass-border: 1px solid rgba(167, 220, 165, 0.45);
-  --glass-border-subtle: 1px solid rgba(167, 220, 165, 0.28);
-  --glass-border-accent: 1px solid rgba(144, 207, 142, 0.75);
-  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.90),
-                  0 10px 30px rgba(25, 55, 28, 0.05);
-  --glass-shadow-sm: inset 0 1px 0 rgba(255, 255, 255, 0.90),
-                     0 4px 14px rgba(25, 55, 28, 0.04);
-  --glass-shadow-glow: 0 0 32px rgba(144, 207, 142, 0.35),
-                       0 12px 36px rgba(25, 55, 28, 0.08);
+  /* Liquid Glass Recipe Components (Dark Frosted Moon Glass) */
+  --glass-bg: linear-gradient(135deg, rgba(66, 13, 75, 0.55), rgba(33, 6, 53, 0.82) 65%),
+              rgba(40, 7, 61, 0.70);
+  --glass-blur: blur(24px) saturate(190%);
+  --glass-border: 1px solid rgba(123, 51, 126, 0.35);
+  --glass-border-subtle: 1px solid rgba(102, 103, 171, 0.22);
+  --glass-border-accent: 1px solid rgba(123, 51, 126, 0.85);
+  --glass-shadow: inset 0 1px 0 rgba(245, 213, 224, 0.12),
+                  0 16px 40px rgba(10, 2, 18, 0.55);
+  --glass-shadow-sm: inset 0 1px 0 rgba(245, 213, 224, 0.10),
+                     0 6px 18px rgba(10, 2, 18, 0.45);
+  --glass-shadow-glow: 0 0 35px rgba(123, 51, 126, 0.50),
+                       0 16px 44px rgba(10, 2, 18, 0.65);
 
-  /* Table Surface (Light crisp styling) */
-  --table-bg: rgba(255, 255, 255, 0.75);
-  --table-header-bg: rgba(228, 253, 225, 0.92);
-  --table-row-hover: rgba(198, 237, 195, 0.30);
+  /* Table Surface (Dark crisp styling) */
+  --table-bg: rgba(33, 6, 53, 0.65);
+  --table-header-bg: rgba(66, 13, 75, 0.88);
+  --table-row-hover: rgba(102, 103, 171, 0.20);
 
   /* Layout Widths */
   --sidebar-w-expanded: 264px;
