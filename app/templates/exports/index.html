@@ -106,7 +106,7 @@
             <span class="text-secondary" style="font-size: 12px;">Consolidated audit bundle</span>
           </div>
         </div>
-        <span class="chip" style="background: rgba(255,255,255,0.06); color: var(--text-2); border-color: rgba(255,255,255,0.1);">
+        <span class="chip" style="background: var(--bg-canvas); color: var(--text-2); border-color: var(--border-subtle);">
           {{ icon('shield', size=12) }}
           <span>Audit Pack</span>
         </span>
@@ -221,7 +221,7 @@
               <td style="font-weight: 600; color: var(--text-1);">{{ inv.invoice_no }}</td>
               <td class="text-secondary">{{ inv.invoice_date.strftime('%d/%m/%Y') if inv.invoice_date else '-' }}</td>
               <td style="color: var(--text-1);">{{ inv.party.name if inv.party else 'Unknown' }}</td>
-              <td><code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: var(--radius-sm); font-size: 12px; color: var(--text-2); border: 1px solid rgba(255,255,255,0.06);">{{ inv.supplier_gstin or inv.buyer_gstin or '-' }}</code></td>
+              <td><code style="background: var(--bg-canvas); padding: 2px 6px; border-radius: var(--radius-sm); font-size: 12px; color: var(--text-2); border: 1px solid var(--border-subtle);">{{ inv.supplier_gstin or inv.buyer_gstin or '-' }}</code></td>
               <td style="text-align: right; font-variant-numeric: tabular-nums;">{{ format_inr(inv.taxable) }}</td>
               <td style="text-align: right; font-variant-numeric: tabular-nums; color: var(--text-2);">{{ format_inr(inv.cgst + inv.sgst + inv.igst) }}</td>
               <td style="text-align: right; font-weight: 600; color: var(--text-1); font-variant-numeric: tabular-nums;">{{ format_inr(inv.total) }}</td>

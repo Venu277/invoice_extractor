@@ -1,5 +1,6 @@
 {% from "macros/icons.html" import icon %}
-{% from "_site.html" import site_name, site_tagline, site_description, site_email, site_phone, site_copyright, current_year %}
+{% from "macros/buttons.html" import roll_button %}
+{% from "_site.html" import site_name, site_tagline, site_description, about_text, site_email, site_phone, site_copyright, current_year %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,9 +9,13 @@
   <title>Axion | {{ site_tagline }}</title>
   <meta name="application-name" content="Axion (formerly InvoiceIQ)">
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-  <link rel="stylesheet" href="/static/css/tokens.css?v=4.0">
-  <link rel="stylesheet" href="/static/css/base.css?v=4.0">
-  <link rel="stylesheet" href="/static/css/components.css?v=4.0">
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+  <link rel="manifest" href="/static/site.webmanifest">
+  <link rel="stylesheet" href="/static/css/tokens.css?v=4.3">
+  <link rel="stylesheet" href="/static/css/motion.css?v=4.3">
+  <link rel="stylesheet" href="/static/css/base.css?v=4.3">
+  <link rel="stylesheet" href="/static/css/components.css?v=4.3">
+  <script src="/static/js/motion.js?v=4.3"></script>
   <style>
     @property --angle {
       syntax: '<angle>';
@@ -18,20 +23,81 @@
       inherits: false;
     }
 
+    /* Floating Navigation Pill */
+    .public-topbar {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-16px);
+      width: calc(100% - 32px);
+      max-width: 1040px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--sp-5);
+      border-radius: var(--r-pill);
+      z-index: 100;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 1px 0 var(--border-highlight) inset, 0 4px 16px rgba(15, 23, 42, 0.08);
+      opacity: 0;
+      transition: transform 500ms var(--ease-out),
+                  opacity 500ms var(--ease-out),
+                  padding var(--dur-base) var(--ease-out),
+                  background var(--dur-base) var(--ease-out),
+                  border-color var(--dur-base) var(--ease-out),
+                  box-shadow var(--dur-base) var(--ease-out);
+    }
+
+    .public-topbar.is-loaded {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .public-topbar.is-compact {
+      top: 12px;
+      height: 48px;
+      padding: 0 var(--sp-4);
+      background: var(--bg-surface);
+      border-color: var(--border-medium);
+      box-shadow: 0 1px 0 var(--border-highlight) inset, 0 8px 24px rgba(15, 23, 42, 0.12);
+    }
+
+    .topbar-nav {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-6);
+    }
+
+    .topbar-link {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color var(--dur-fast) var(--ease-out);
+    }
+
+    .topbar-link:hover {
+      color: var(--text-1);
+    }
+
+    /* Hero Section - Solid Light Canvas, Absolutely No Gradient */
     .hero-section {
-      min-height: 88vh;
+      min-height: 92vh;
       position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding-top: calc(72px + 40px);
+      padding-top: calc(72px + 48px);
       padding-bottom: var(--sp-12);
       padding-left: var(--sp-6);
       padding-right: var(--sp-6);
       overflow: hidden;
-      background: radial-gradient(circle at 50% 25%, rgba(66, 13, 75, 0.65) 0%, rgba(33, 6, 53, 0.95) 70%, var(--moon-space) 100%);
+      background-color: var(--black);
+      background-image: none;
     }
 
     .hero-canvas {
@@ -42,232 +108,750 @@
     }
 
     .hero-orbs {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      overflow: hidden;
-      pointer-events: none;
-      z-index: 0;
+      display: none;
     }
 
-    .orb {
-      position: absolute;
-      border-radius: var(--r-pill);
-      filter: blur(85px);
-      mix-blend-mode: screen;
-      animation: driftOrb 30s infinite alternate ease-in-out;
-    }
-
-    .orb-1 { width: 520px; height: 520px; background: var(--moon-orchid); top: 5%; left: 10%; animation-duration: 24s; opacity: 0.35; }
-    .orb-2 { width: 620px; height: 620px; background: var(--moon-plum); top: 30%; right: 5%; animation-duration: 32s; opacity: 0.45; }
-    .orb-3 { width: 460px; height: 460px; background: var(--moon-periwinkle); bottom: 5%; left: 25%; animation-duration: 28s; opacity: 0.28; }
-    .orb-4 { width: 400px; height: 400px; background: var(--moon-blush); top: 15%; right: 28%; animation-duration: 36s; opacity: 0.14; }
-
-    @keyframes driftOrb {
-      0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(50px, -35px) scale(1.12); }
-      100% { transform: translate(-45px, 45px) scale(0.94); }
-    }
-
-    .logo-glow-tile {
-      width: 96px;
-      height: 96px;
-      border-radius: var(--r-xl);
-      padding: 3px;
-      position: relative;
-      background: conic-gradient(from var(--angle), var(--moon-orchid), var(--moon-periwinkle), var(--moon-plum), var(--moon-blush), var(--moon-orchid));
-      animation: rotateGlow 8s linear infinite;
-      box-shadow: 0 0 35px rgba(123, 51, 126, 0.65),
-                  0 0 70px rgba(102, 103, 171, 0.35);
-      margin-bottom: var(--sp-6);
+    /* Hero Badge */
+    .hero-badge {
       display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
+      padding: 6px 14px;
+      border-radius: var(--r-pill);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--sky-800);
+      background: var(--sky-50);
+      border: 1px solid var(--sky-200);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), inset 0 1px 0 var(--border-highlight);
+      margin-bottom: var(--sp-5);
+      text-decoration: none;
       z-index: 2;
-      transition: transform var(--dur-normal) var(--ease-apple), box-shadow var(--dur-normal) var(--ease-apple);
+      transition: background var(--dur-fast) var(--ease-out),
+                  border-color var(--dur-fast) var(--ease-out),
+                  transform var(--dur-fast) var(--ease-out);
     }
 
-    .logo-glow-tile:hover {
-      transform: scale(1.08) rotate(3deg);
-      box-shadow: 0 0 45px rgba(123, 51, 126, 0.85),
-                  0 0 90px rgba(102, 103, 171, 0.55);
-    }
-
-    @keyframes rotateGlow {
-      to { --angle: 360deg; }
-    }
-
-    .logo-inner-tile {
-      width: 100%;
-      height: 100%;
-      border-radius: calc(var(--r-xl) - 3px);
-      background: var(--moon-space);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .public-topbar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 var(--sp-8);
-      z-index: 100;
-      border-bottom: var(--glass-border-subtle);
-      background: rgba(33, 6, 53, 0.75);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+    .hero-badge:hover {
+      background: var(--sky-100);
+      border-color: var(--sky-400);
+      transform: translateY(-1px);
     }
 
     .hero-title {
-      font-size: var(--font-size-hero);
-      font-weight: 300;
-      letter-spacing: -0.04em;
-      line-height: 1;
+      font-size: clamp(38px, 6.5vw, 68px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      max-width: 920px;
+      margin: 0 auto var(--sp-5);
       color: var(--text-1);
-      margin-bottom: var(--sp-4);
       z-index: 2;
-      text-shadow: 0 0 35px rgba(123, 51, 126, 0.50), 0 0 70px rgba(102, 103, 171, 0.30);
     }
 
     .hero-tagline {
-      font-size: clamp(17px, 2.5vw, 22px);
-      color: var(--text-2);
+      font-size: clamp(16px, 2.2vw, 20px);
       font-weight: 400;
-      letter-spacing: -0.015em;
-      max-width: 620px;
+      line-height: 1.5;
+      max-width: 680px;
       margin: 0 auto var(--sp-8);
+      color: var(--text-2);
       z-index: 2;
     }
 
     .hero-actions {
       display: flex;
-      gap: var(--sp-4);
-      z-index: 2;
-      margin-bottom: var(--sp-10);
-      flex-wrap: wrap;
+      align-items: center;
       justify-content: center;
+      gap: var(--sp-4);
+      margin-bottom: var(--sp-12);
+      z-index: 2;
+      flex-wrap: wrap;
     }
 
-    .scroll-cue {
-      position: absolute;
-      bottom: var(--sp-6);
+    /* 3D Angled Hero Preview Card */
+    .hero-preview-container {
+      width: 100%;
+      max-width: 980px;
+      margin: 0 auto;
+      perspective: 1200px;
+      z-index: 2;
+    }
+
+    .hero-preview-card {
+      border-radius: var(--r-xl);
+      padding: var(--sp-6);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 1px 0 var(--border-highlight) inset, 0 20px 40px -15px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.03);
+      transition: transform var(--dur-base) var(--ease-out),
+                  box-shadow var(--dur-base) var(--ease-out);
+      transform-style: preserve-3d;
+    }
+
+    .hero-preview-card:hover {
+      box-shadow: 0 1px 0 var(--border-highlight) inset, 0 24px 48px -12px rgba(15, 23, 42, 0.12);
+    }
+
+    .preview-header-bar {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: var(--sp-4);
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: var(--sp-5);
+    }
+
+    .preview-dots {
+      display: flex;
       align-items: center;
       gap: 6px;
+    }
+
+    .preview-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: var(--r-pill);
+      background: var(--sky-200);
+      box-shadow: inset 0 1px 0 var(--border-highlight);
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--sp-4);
+      text-align: left;
+    }
+
+    .preview-stat-card {
+      padding: var(--sp-4);
+      border-radius: var(--r-md);
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .preview-stat-label {
+      font-size: 12px;
+      font-weight: 500;
       color: var(--text-3);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      text-decoration: none;
-      z-index: 2;
-      animation: floatCue 3s ease-in-out infinite;
+      margin-bottom: 4px;
     }
 
-    @keyframes floatCue {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(6px); color: var(--text-1); }
+    .preview-stat-val {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-1);
+      letter-spacing: -0.02em;
     }
 
+    /* Continuous Marquee Ticker Band */
+    .ticker-section {
+      padding: var(--sp-6) 0;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      overflow: hidden;
+    }
+
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
+      padding: 8px 18px;
+      margin: 0 var(--sp-2);
+      border-radius: var(--r-pill);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--sky-900);
+      background: var(--sky-50);
+      border: 1px solid var(--sky-200);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03), inset 0 1px 0 var(--border-highlight);
+      white-space: nowrap;
+    }
+
+    /* Content Sections */
     .content-section {
-      max-width: 1080px;
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 100px var(--sp-6);
+      padding: var(--sp-16) var(--sp-6);
+      text-align: center;
     }
 
     .section-eyebrow {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--moon-periwinkle);
+      display: inline-block;
+      font-size: 12.5px;
       font-weight: 600;
-      margin-bottom: var(--sp-2);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--sky-600);
+      margin-bottom: var(--sp-3);
     }
 
     .section-title {
-      font-size: clamp(28px, 4vw, 42px);
-      font-weight: 500;
-      letter-spacing: -0.03em;
+      font-size: clamp(28px, 4.5vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.025em;
       color: var(--text-1);
-      margin-bottom: var(--sp-8);
+      margin-bottom: var(--sp-4);
+      line-height: 1.18;
     }
 
-    .feature-card {
+    /* About Section & Typewriter Box */
+    .about-typewriter-box {
+      max-width: 820px;
+      margin: 0 auto;
       padding: var(--sp-8);
-      border-radius: var(--r-lg);
+      border-radius: var(--r-xl);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 1px 0 var(--border-highlight) inset, 0 8px 24px rgba(15, 23, 42, 0.06);
+      text-align: left;
+    }
+
+    .about-body-text {
+      font-size: clamp(16px, 2.2vw, 19px);
+      line-height: 1.68;
+      color: var(--text-2);
+      font-weight: 400;
+    }
+
+    /* Workflow Interactive Tiles */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--sp-6);
+      margin-top: var(--sp-10);
+      text-align: left;
+    }
+
+    .step-tile {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 100%;
+      border-radius: var(--r-xl);
+      padding: var(--sp-6);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 1px 0 var(--border-highlight) inset, 0 4px 14px rgba(15, 23, 42, 0.05);
+      cursor: pointer;
+      position: relative;
+      text-align: left;
+      font-family: inherit;
       display: flex;
       flex-direction: column;
-      gap: var(--sp-3);
-      height: 100%;
-      transition: transform var(--dur-normal) var(--ease-apple), box-shadow var(--dur-normal) var(--ease-apple), border-color var(--dur-normal) var(--ease-apple);
+      justify-content: space-between;
+      min-height: 145px;
+      transition: transform var(--dur-normal) var(--ease-apple),
+                  box-shadow var(--dur-normal) var(--ease-apple),
+                  border-color var(--dur-fast) var(--ease-out),
+                  opacity 280ms var(--ease-out);
     }
 
-    .feature-card:hover {
+    .step-tile:hover {
       transform: translateY(-4px);
-      border-color: rgba(123, 51, 126, 0.65);
-      box-shadow: 0 18px 45px rgba(10, 2, 18, 0.65), 0 0 30px rgba(123, 51, 126, 0.30);
+      box-shadow: 0 1px 0 var(--border-highlight) inset, 0 12px 28px rgba(15, 23, 42, 0.10);
+      border-color: var(--sky-300);
     }
 
-    .feature-icon-tile {
-      width: 48px;
-      height: 48px;
-      border-radius: var(--r-md);
-      background: rgba(66, 13, 75, 0.55);
-      border: 1px solid rgba(102, 103, 171, 0.35);
+    .step-tile:focus-visible {
+      outline: none;
+      border-color: var(--sky-500);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.20), 0 1px 0 var(--border-highlight) inset;
+    }
+
+    .step-tile-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: var(--sp-4);
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: var(--r-pill);
+      background: var(--sky-500);
+      border: 1px solid var(--sky-600);
+      box-shadow: 0 2px 0 var(--sky-700), inset 0 1px 0 var(--border-highlight);
+      color: var(--btn-primary-text);
+      font-size: 13.5px;
+      font-weight: 700;
+    }
+
+    .step-tile-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: var(--r-pill);
+      background: var(--sky-50);
+      border: 1px solid var(--sky-200);
+      color: var(--sky-600);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--dur-fast) var(--ease-apple), background var(--dur-fast) var(--ease-apple), color var(--dur-fast) var(--ease-apple);
+    }
+
+    .step-tile:hover .step-tile-icon {
+      transform: translateX(3px);
+      background: var(--sky-100);
+      color: var(--sky-700);
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-1);
+      letter-spacing: -0.015em;
+      margin: 0;
+    }
+
+    /* Centered Squircle Expanded Modal & Backdrop Blur */
+    .workflow-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: var(--sp-6);
+      opacity: 0;
+      perspective: 1200px;
+      transition: opacity 350ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .workflow-overlay.is-active {
+      display: flex;
+    }
+
+    .workflow-overlay.is-visible {
+      opacity: 1;
+    }
+
+    .workflow-modal-squircle {
+      width: 100%;
+      max-width: 520px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 28px;
+      padding: var(--sp-8);
+      box-shadow: 0 1px 0 var(--border-highlight) inset, 0 24px 64px rgba(15, 23, 42, 0.25);
+      position: relative;
+      transform-origin: center center;
+      transform-style: preserve-3d;
+      will-change: transform, opacity;
+      transform: scale(0.9) rotateY(180deg);
+      opacity: 0;
+      text-align: left;
+    }
+
+    .workflow-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--sp-5);
+    }
+
+    .workflow-modal-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: var(--r-pill);
+      background: var(--sky-500);
+      border: 1px solid var(--sky-600);
+      box-shadow: 0 2px 0 var(--sky-700), inset 0 1px 0 var(--border-highlight);
+      color: var(--btn-primary-text);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .workflow-modal-close {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--r-pill);
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-2);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      transition: all var(--dur-fast) var(--ease-apple);
+    }
+
+    .workflow-modal-close:hover {
+      background: var(--sky-50);
+      border-color: var(--sky-300);
+      color: var(--sky-700);
+      transform: scale(1.05);
+    }
+
+    .workflow-modal-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-1);
+      margin: 0 0 var(--sp-3) 0;
+    }
+
+    .workflow-modal-desc {
+      font-size: 15.5px;
+      line-height: 1.65;
+      color: var(--text-2);
+      margin: 0 0 var(--sp-6) 0;
+    }
+
+    .workflow-modal-footer {
+      font-size: 12px;
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: var(--sp-4);
+    }
+
+    /* 3D Laptop Scroll Showcase & Capabilities (MacBook Pro Mockup) */
+    .laptop-scroll-track {
+      position: relative;
+      min-height: 280vh;
+      margin: 0;
+      padding: 0;
+      background: var(--bg-canvas);
+    }
+
+    .laptop-sticky-stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--sp-4) var(--sp-6);
+      box-sizing: border-box;
+      overflow: hidden;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .laptop-header-group {
+      text-align: center;
+      margin-bottom: var(--sp-4);
+      z-index: 5;
+    }
+
+    .laptop-viewport-rig {
+      perspective: 1400px;
+      perspective-origin: 50% 68%;
+      width: clamp(320px, 86vw, 680px);
+      margin: 0 auto;
+      z-index: 4;
+    }
+
+    .laptop-device {
+      position: relative;
+      width: 100%;
+      transform-style: preserve-3d;
+      margin: 0 auto;
+    }
+
+    /* 3D Screen Lid - 83% width of base to match reference image */
+    .laptop-lid {
+      position: relative;
+      width: 83%;
+      margin: 0 auto;
+      transform-origin: bottom center;
+      transform-style: preserve-3d;
+      transform: rotateX(-75deg);
+      will-change: transform;
+      transition: transform 0.08s linear;
+      z-index: 2;
+    }
+
+    /* Outer Aluminum Rim */
+    .macbook-outer-lid {
+      background: var(--laptop-chassis);
+      border-radius: 18px 18px 0 0;
+      padding: 2.5px;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12),
+                  0 20px 48px rgba(15, 23, 42, 0.18);
+    }
+
+    /* Black Bezel Frame */
+    .macbook-bezel {
+      background: var(--laptop-bezel);
+      border-radius: 15px 15px 0 0;
+      padding: 8px 11px 8px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Centered Camera Pinhole */
+    .macbook-camera {
+      width: 5px;
+      height: 5px;
+      border-radius: var(--r-pill);
+      background: var(--laptop-webcam);
+      margin: 0 auto 6px;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Screen Display - 16:10 MacBook Aspect Ratio */
+    .macbook-screen {
+      background: var(--bg-surface);
+      border-radius: 4px;
+      aspect-ratio: 16 / 10;
+      width: 100%;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--moon-blush);
-      margin-bottom: var(--sp-2);
-      transition: transform var(--dur-fast) var(--ease-apple), box-shadow var(--dur-fast) var(--ease-apple);
-    }
-
-    .feature-card:hover .feature-icon-tile {
-      transform: scale(1.10);
-      box-shadow: 0 0 18px rgba(123, 51, 126, 0.55);
-    }
-
-    .public-footer {
-      border-top: 1px solid rgba(123, 51, 126, 0.25);
-      padding: 80px var(--sp-8) 40px;
-      background: var(--maroon-3);
+      padding: 20px 24px;
+      box-sizing: border-box;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
       position: relative;
-      z-index: 10;
+    }
+
+    /* Bottom Chin with Subtle Wordmark */
+    .macbook-chin {
+      text-align: center;
+      padding-top: 5px;
+      line-height: 1;
+    }
+
+    .macbook-brand-text {
+      font-size: 8px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      color: var(--laptop-bezel-rim);
+      text-transform: uppercase;
+      opacity: 0.65;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Plain Text & Vectors Screen Layout - NO card boxes, NO card borders */
+    .screen-capabilities-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px 18px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .capability-item {
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      margin: 0;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 320ms cubic-bezier(0.16, 1, 0.3, 1), transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+
+    .capability-item.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .capability-vector {
+      color: var(--sky-600);
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+      transition: color var(--dur-fast) var(--ease-out);
+    }
+
+    .capability-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin: 0 0 3px 0;
+      letter-spacing: -0.015em;
+      line-height: 1.25;
+    }
+
+    .capability-desc {
+      font-size: 10px;
+      line-height: 1.4;
+      color: var(--text-2);
+      margin: 0 0 4px 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .capability-metric {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--sky-600);
+      letter-spacing: -0.01em;
+    }
+
+    /* MacBook Base / Chassis (Matching Reference Image) */
+    .macbook-base {
+      position: relative;
+      width: 100%;
+      height: 18px;
+      background: linear-gradient(180deg, var(--laptop-chassis) 0%, var(--laptop-chassis-lip) 100%);
+      border-radius: 0 0 16px 16px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45),
+                  0 2px 4px rgba(0, 0, 0, 0.12);
+      z-index: 3;
+    }
+
+    .macbook-base-lip {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--laptop-bezel-rim);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    /* Front Thumb Inset Notch in Center */
+    .macbook-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 72px;
+      height: 4.5px;
+      background: var(--laptop-bezel);
+      border-radius: 0 0 6px 6px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Soft Floor Radial Shadow under Laptop Base */
+    .macbook-shadow {
+      width: 95%;
+      height: 20px;
+      margin: 0 auto;
+      background: radial-gradient(ellipse at 50% 0%, rgba(15, 23, 42, 0.22) 0%, rgba(15, 23, 42, 0) 72%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* CTA Section below laptop */
+    .cta-banner-section {
+      padding: var(--sp-20) var(--sp-6) var(--sp-24);
+      background: var(--bg-canvas);
+      text-align: center;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .cta-banner-container {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--sp-6);
+    }
+
+    .cta-banner-title {
+      font-size: clamp(28px, 4.5vw, 42px);
+      font-weight: 700;
+      color: var(--text-1);
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    .cta-banner-action {
+      margin-top: var(--sp-2);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .laptop-scroll-track {
+        min-height: auto;
+      }
+      .laptop-sticky-stage {
+        position: static;
+        height: auto;
+        padding: var(--sp-12) var(--sp-6);
+      }
+      .laptop-lid {
+        transform: none !important;
+        transition: none !important;
+      }
+      .capability-item {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .laptop-viewport-rig {
+        width: 95vw;
+      }
+      .screen-capabilities-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .macbook-screen {
+        padding: 14px 16px;
+      }
+      .capability-desc {
+        display: none;
+      }
+    }
+
+    /* Footer */
+    .public-footer {
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      padding: var(--sp-12) var(--sp-6) var(--sp-8);
+      color: var(--text-2);
     }
 
     .footer-grid {
       max-width: 1080px;
-      margin: 0 auto;
+      margin: 0 auto var(--sp-8);
       display: grid;
-      grid-template-columns: 2fr 1fr 1.5fr;
+      grid-template-columns: 2fr 1fr 1fr;
       gap: var(--sp-8);
-      margin-bottom: 60px;
-    }
-
-    @media (max-width: 768px) {
-      .footer-grid { grid-template-columns: 1fr; gap: var(--sp-6); }
     }
 
     .footer-col h4 {
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-3);
-      margin-bottom: var(--sp-4);
+      font-size: 14px;
       font-weight: 600;
+      color: var(--text-1);
+      margin-bottom: var(--sp-4);
     }
 
     .footer-col ul {
       list-style: none;
+      padding: 0;
+      margin: 0;
       display: flex;
       flex-direction: column;
-      gap: var(--sp-3);
-      font-size: 13.5px;
+      gap: var(--sp-2);
     }
 
     .footer-col ul li a {
+      font-size: 13.5px;
       color: var(--text-2);
+      text-decoration: none;
+      transition: color var(--dur-fast) var(--ease-out);
     }
 
     .footer-col ul li a:hover {
@@ -278,14 +862,22 @@
       max-width: 1080px;
       margin: 0 auto;
       padding-top: var(--sp-6);
-      border-top: 1px solid rgba(123, 51, 126, 0.25);
+      border-top: 1px solid var(--border-subtle);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12px;
+      font-size: 12.5px;
       color: var(--text-3);
       flex-wrap: wrap;
       gap: var(--sp-3);
+    }
+
+    @media (max-width: 900px) {
+      .topbar-nav { display: none; }
+      .steps-grid,
+      .services-grid,
+      .preview-grid,
+      .footer-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -293,161 +885,300 @@
   <!-- Hidden accessibility meta for backward-compatibility test suite -->
   <div style="display:none;" aria-hidden="true">InvoiceIQ</div>
 
-  <!-- 1. Sticky Glass Top Bar -->
-  <header class="public-topbar glass">
-    <a href="/home" style="display: flex; align-items: center; gap: var(--sp-3); text-decoration: none;">
-      <div style="width: 32px; height: 32px; border-radius: var(--r-sm); background: linear-gradient(135deg, var(--moon-orchid), var(--moon-plum)); border: 1px solid rgba(245, 213, 224, 0.35); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(123, 51, 126, 0.40);">
-        <svg width="18" height="18" viewBox="0 0 64 64" fill="none">
-          <path d="M32 14L48 48H39.5L34.8 37H29.2L24.5 48H16L32 14Z" fill="var(--moon-blush)" />
-          <polygon points="32,23.5 27.5,33 36.5,33" fill="var(--moon-space)" />
-        </svg>
-      </div>
-      <span style="font-size: 19px; font-weight: 600; color: var(--text-1); letter-spacing: -0.02em;">Axion</span>
+  <!-- 1. Floating Topbar Glass Pill -->
+  <header class="public-topbar topbar-floating">
+    <a href="/home" style="display: flex; align-items: center; gap: var(--sp-2); text-decoration: none;">
+      <img src="/static/img/axion-lockup.svg" alt="Axion" height="32" style="display: block;">
     </a>
 
-    <!-- Top Right: Navigation to dedicated Login / Signup -->
+    <nav class="topbar-nav">
+      <a href="#how-it-works" class="topbar-link">How it Works</a>
+      <a href="#about" class="topbar-link">What Axion Does</a>
+      <a href="#services" class="topbar-link">Features</a>
+    </nav>
+
     <div style="display: flex; align-items: center; gap: var(--sp-3);">
-      <a href="/login" class="btn btn-ghost btn-sm">Log in</a>
-      <a href="/login?tab=signup" class="btn btn-primary btn-sm">Sign up</a>
+      {{ roll_button("Log in", href="/login", variant="ghost btn-sm") }}
+      {{ roll_button("Get Started", href="/login?tab=signup", variant="primary btn-sm") }}
     </div>
   </header>
 
-  <!-- 2. Hero Section (No login/signup block below logo) -->
-  <section class="hero-section">
-    <div class="hero-orbs">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
-      <div class="orb orb-4"></div>
-    </div>
-
-    <!-- Live Animated Celestial Canvas -->
+  <!-- Main Content Landmark -->
+  <main id="mainContent">
+    <!-- 2. Hero Section -->
+    <section class="hero-section">
     <canvas id="heroCanvas" class="hero-canvas"></canvas>
 
-    <!-- Glowing Axion Mark Tile -->
-    <div class="logo-glow-tile squircle">
-      <div class="logo-inner-tile squircle">
-        <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
-          <path d="M32 12L50 50H40.5L35.2 38H28.8L23.5 50H14L32 12Z" fill="url(#hero-logo-accent)" />
-          <polygon points="32,22 27,33.5 37,33.5" fill="var(--moon-space)" />
-          <circle cx="32" cy="12" r="2.5" fill="var(--moon-blush)" />
-          <defs>
-            <linearGradient id="hero-logo-accent" x1="14" y1="12" x2="50" y2="50" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="var(--moon-orchid)" />
-              <stop offset="50%" stop-color="var(--moon-periwinkle)" />
-              <stop offset="100%" stop-color="var(--moon-blush)" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
+    <!-- Large H1 with Word-by-Word Reveal -->
+    <h1 class="hero-title" data-reveal="words">
+      <span class="sr-only">{{ site_tagline }}</span>
+      <span aria-hidden="true">
+        <span class="word-mask"><span class="word-inner" style="--d: 0ms;">Invoice</span></span>
+        <span class="word-mask"><span class="word-inner" style="--d: 35ms;">intelligence</span></span>
+        <span class="word-mask"><span class="word-inner" style="--d: 70ms;">for</span></span>
+        <span class="word-mask"><span class="word-inner" style="--d: 105ms;">growing</span></span>
+        <span class="word-mask"><span class="word-inner" style="--d: 140ms;">businesses</span></span>
+      </span>
+    </h1>
+
+    <!-- Tagline Paragraph -->
+    <p class="hero-tagline" data-reveal="fade-up">Automated PDF extraction, statutory GST validation, and ledger reconciliation crafted with Apple-grade precision.</p>
+
+    <!-- Roll Action Buttons -->
+    <div class="hero-actions" data-reveal="fade-up">
+      {{ roll_button("Start Free Trial", href="/login?tab=signup", variant="primary btn-lg") }}
+      {{ roll_button("See How It Works", href="#how-it-works", variant="secondary btn-lg") }}
     </div>
 
-    <!-- Wordmark & Tagline -->
-    <h1 class="hero-title">Axion</h1>
-    <p class="hero-tagline">{{ site_tagline }}</p>
-
-    <!-- Primary Calls to Action -->
-    <div class="hero-actions">
-      <a href="/login" class="btn btn-primary" style="padding: 12px 24px; font-size: 15px;">
-        <span>Log in to workspace</span>
-        {{ icon('arrow-right', size=16) }}
-      </a>
-      <a href="/login?tab=signup" class="btn btn-secondary" style="padding: 12px 24px; font-size: 15px;">
-        <span>Create an account</span>
-      </a>
-    </div>
-
-    <!-- Scroll Cue -->
-    <a href="#about" class="scroll-cue" aria-label="Scroll to about section">
-      <span>Discover</span>
-      {{ icon('chevron-down', size=16) }}
-    </a>
-  </section>
-
-  <!-- 3. About Axion Section -->
-  <section id="about" class="content-section">
-    <div class="section-eyebrow">About Axion</div>
-    <h2 class="section-title">Organised intelligence for your balance sheet.</h2>
-
-    <div class="card glass" style="padding: var(--sp-8) var(--sp-10); font-size: 17px; line-height: 1.8; color: var(--text-2);">
-      Axion turns the invoices you receive and send into clear, checked numbers. Upload a PDF or a scan, and Axion reads the supplier, dates, GSTIN, taxes and totals, checks them against GST rules, and keeps everything in one organised place. From there you can see who owes you, what you owe, and where your GST stands, without spreadsheets.
-    </div>
-  </section>
-
-  <!-- 4. What Axion Does (3x2 Grid of Feature Cards) -->
-  <section id="services" class="content-section" style="padding-top: 0;">
-    <div class="section-eyebrow">Capabilities</div>
-    <h2 class="section-title">What Axion does</h2>
-
-    <div class="grid-3">
-      <!-- 1. Invoice Extraction -->
-      <div class="card glass glass-interactive feature-card">
-        <div class="feature-icon-tile">
-          {{ icon('upload', size=22) }}
+    <!-- 3D Interactive Hero Preview Card -->
+    <div class="hero-preview-container" data-reveal="scale">
+      <div class="hero-preview-card" data-hero-visual data-specular>
+        <div class="preview-header-bar">
+          <div class="preview-dots">
+            <div class="preview-dot"></div>
+            <div class="preview-dot"></div>
+            <div class="preview-dot"></div>
+          </div>
+          <div style="font-size: 12px; font-weight: 500; color: var(--text-3);">Axion Workspace Overview</div>
+          <div style="font-size: 12px; color: var(--ok);">Live System Ready</div>
         </div>
-        <h3 style="font-size: 18px; color: var(--text-1);">Invoice extraction</h3>
-        <p style="font-size: 14px;">Reads PDFs and scanned invoices, including line items and HSN codes with high-precision OCR fallback.</p>
-      </div>
 
-      <!-- 2. GST Validation -->
-      <div class="card glass glass-interactive feature-card">
-        <div class="feature-icon-tile">
-          {{ icon('shield', size=22) }}
+        <div class="preview-grid">
+          <div class="preview-stat-card">
+            <div class="preview-stat-label">Invoices Analyzed</div>
+            <div class="preview-stat-val" data-count="12450" data-suffix="+">12,450+</div>
+          </div>
+          <div class="preview-stat-card">
+            <div class="preview-stat-label">ITC Reconciled</div>
+            <div class="preview-stat-val" data-count="8542000" data-prefix="Rs. ">Rs. 85,42,000</div>
+          </div>
+          <div class="preview-stat-card">
+            <div class="preview-stat-label">GST Compliance</div>
+            <div class="preview-stat-val" data-count="100" data-suffix="%">100%</div>
+          </div>
         </div>
-        <h3 style="font-size: 18px; color: var(--text-1);">GST validation</h3>
-        <p style="font-size: 14px;">Checks GSTIN, state, tax split, standard slabs and arithmetic totals before mistakes reach your books.</p>
-      </div>
-
-      <!-- 3. Review and Approval -->
-      <div class="card glass glass-interactive feature-card">
-        <div class="feature-icon-tile">
-          {{ icon('check', size=22) }}
-        </div>
-        <h3 style="font-size: 18px; color: var(--text-1);">Review and approval</h3>
-        <p style="font-size: 14px;">Correct anything side by side with the original, and only approved invoices count in reports.</p>
-      </div>
-
-      <!-- 4. Payments and Ageing -->
-      <div class="card glass glass-interactive feature-card">
-        <div class="feature-icon-tile">
-          {{ icon('calendar', size=22) }}
-        </div>
-        <h3 style="font-size: 18px; color: var(--text-1);">Payments and ageing</h3>
-        <p style="font-size: 14px;">Track what is paid, due and overdue, with automated running ledgers for receivables and payables.</p>
-      </div>
-
-      <!-- 5. Reports and GST Summaries -->
-      <div class="card glass glass-interactive feature-card">
-        <div class="feature-icon-tile">
-          {{ icon('reports', size=22) }}
-        </div>
-        <h3 style="font-size: 18px; color: var(--text-1);">Reports and GST summaries</h3>
-        <p style="font-size: 14px;">Monthly business report, accrual profit and loss, statutory GSTR-style summaries and an HSN breakdown.</p>
-      </div>
-
-      <!-- 6. Invoicing and Exports -->
-      <div class="card glass glass-interactive feature-card">
-        <div class="feature-icon-tile">
-          {{ icon('exports', size=22) }}
-        </div>
-        <h3 style="font-size: 18px; color: var(--text-1);">Invoicing and exports</h3>
-        <p style="font-size: 14px;">Create GST invoices as PDFs, and export to Tally XML, Excel, CSV and an accountant package, with backups.</p>
       </div>
     </div>
   </section>
 
-  <!-- 5. 3-Column Glass Footer (NO UB City address) -->
-  <footer class="public-footer glass">
-    <div class="footer-grid">
-      <!-- Col 1: Brand & Tagline -->
-      <div class="footer-col">
-        <div style="display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-3);">
-          <img src="/static/favicon.svg" alt="Axion Logo" width="24" height="24">
-          <span style="font-size: 18px; font-weight: 600; color: var(--text-1);">Axion</span>
+  <!-- 3. Ticker Marquee Band -->
+  <section class="ticker-section" aria-label="Product Capabilities">
+    <div class="marquee-container">
+      <div class="marquee-track">
+        <div class="ticker-item">{{ icon('check', size=14) }} GSTR-1 &amp; GSTR-3B Reconciliation</div>
+        <div class="ticker-item">{{ icon('file', size=14) }} Instant PDF Invoice Extraction</div>
+        <div class="ticker-item">{{ icon('exports', size=14) }} Tally &amp; Zoho XML Export</div>
+        <div class="ticker-item">{{ icon('shield', size=14) }} Zero Layout Shift Motion</div>
+        <div class="ticker-item">{{ icon('receipt', size=14) }} HSN &amp; SAC Summary Checking</div>
+        <div class="ticker-item">{{ icon('parties', size=14) }} Multi-Party Ledger Matching</div>
+        <div class="ticker-item">{{ icon('chart-bar', size=14) }} B2B &amp; B2C Analytics</div>
+        <div class="ticker-item">{{ icon('alert', size=14) }} Smart Anomaly Detection</div>
+        <!-- Duplicated for seamless loop -->
+        <div class="ticker-item">{{ icon('check', size=14) }} GSTR-1 &amp; GSTR-3B Reconciliation</div>
+        <div class="ticker-item">{{ icon('file', size=14) }} Instant PDF Invoice Extraction</div>
+        <div class="ticker-item">{{ icon('exports', size=14) }} Tally &amp; Zoho XML Export</div>
+        <div class="ticker-item">{{ icon('shield', size=14) }} Zero Layout Shift Motion</div>
+        <div class="ticker-item">{{ icon('receipt', size=14) }} HSN &amp; SAC Summary Checking</div>
+        <div class="ticker-item">{{ icon('parties', size=14) }} Multi-Party Ledger Matching</div>
+        <div class="ticker-item">{{ icon('chart-bar', size=14) }} B2B &amp; B2C Analytics</div>
+        <div class="ticker-item">{{ icon('alert', size=14) }} Smart Anomaly Detection</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. How It Works Section -->
+  <section id="how-it-works" class="content-section">
+    <span class="section-eyebrow" data-reveal="fade">Workflow</span>
+    <h2 class="section-title" data-reveal="words">Designed for speed and clarity</h2>
+    <p style="font-size: 16px; color: var(--text-2); max-width: 600px; margin: 0 auto var(--sp-8);" data-reveal="fade-up">
+      Three simple steps to transition from raw invoice documents to verified ledger numbers.
+    </p>
+
+    <!-- 3 Tiles with only numbers and title -->
+    <div class="steps-grid" data-stagger="100">
+      <button type="button" class="step-tile" data-reveal="fade-up" data-specular data-step="1"
+              data-title="Drop &amp; Extract"
+              data-desc="Upload PDF invoices or scans. Intelligent OCR parses vendor details, GSTIN, line items, and tax breakdowns in under two seconds."
+              aria-haspopup="dialog" aria-expanded="false">
+        <div class="step-tile-top">
+          <div class="step-badge">1</div>
+          <div class="step-tile-icon" aria-hidden="true">
+            {{ icon('arrow-right', size=14) }}
+          </div>
         </div>
-        <p style="font-size: 13.5px; line-height: 1.6; max-width: 320px;">
-          {{ site_description }}
+        <h3 class="step-title">Drop &amp; Extract</h3>
+      </button>
+
+      <button type="button" class="step-tile" data-reveal="fade-up" data-specular data-step="2"
+              data-title="Auto-Reconcile"
+              data-desc="Automated rules check GST numbers, calculate CGST/SGST/IGST splits, and verify mathematical integrity before posting to accounts."
+              aria-haspopup="dialog" aria-expanded="false">
+        <div class="step-tile-top">
+          <div class="step-badge">2</div>
+          <div class="step-tile-icon" aria-hidden="true">
+            {{ icon('arrow-right', size=14) }}
+          </div>
+        </div>
+        <h3 class="step-title">Auto-Reconcile</h3>
+      </button>
+
+      <button type="button" class="step-tile" data-reveal="fade-up" data-specular data-step="3"
+              data-title="Export &amp; File"
+              data-desc="Generate audit-ready GSTR reports, sync directly to Tally XML, Excel, and CSV, or share branded PDF summaries with accountants."
+              aria-haspopup="dialog" aria-expanded="false">
+        <div class="step-tile-top">
+          <div class="step-badge">3</div>
+          <div class="step-tile-icon" aria-hidden="true">
+            {{ icon('arrow-right', size=14) }}
+          </div>
+        </div>
+        <h3 class="step-title">Export &amp; File</h3>
+      </button>
+    </div>
+  </section>
+
+  <!-- Centered Expanding Squircle Modal Overlay -->
+  <div id="workflowOverlay" class="workflow-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="workflowModalTitle">
+    <div id="workflowModalCard" class="workflow-modal-squircle">
+      <div class="workflow-modal-header">
+        <div class="workflow-modal-badge" id="workflowModalBadge">1</div>
+        <button type="button" id="workflowModalClose" class="workflow-modal-close" aria-label="Close dialog">
+          {{ icon('close', size=16) }}
+        </button>
+      </div>
+      <h3 class="workflow-modal-title" id="workflowModalTitle">Title</h3>
+      <p class="workflow-modal-desc" id="workflowModalDesc">Description</p>
+      <div class="workflow-modal-footer">
+        <span>Click anywhere outside to close</span>
+        <span style="font-weight: 500; color: var(--sky-600);">ESC to dismiss</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. About Section with Time-Based Typewriter -->
+  <section id="about" class="content-section" style="padding-top: var(--sp-4);">
+    <span class="section-eyebrow" data-reveal="fade">Philosophy</span>
+    <h2 class="section-title" data-reveal="words">
+      <span class="sr-only">What Axion Does</span>
+      <span aria-hidden="true">
+        <span class="word-mask"><span class="word-inner" style="--d: 0ms;">What</span></span>
+        <span class="word-mask"><span class="word-inner" style="--d: 35ms;">Axion</span></span>
+        <span class="word-mask"><span class="word-inner" style="--d: 70ms;">Does</span></span>
+      </span>
+    </h2>
+
+    <div class="about-typewriter-box" data-reveal="fade-up" data-specular>
+      <div class="about-body-text">
+        <p class="typewriter-root" data-typewriter data-typewriter-text="{{ about_text }}" style="margin: 0;">
+          <span class="sr-only">{{ about_text }}</span>
+          <span aria-hidden="true">{% for ch in about_text %}<span class="typewriter-char">{{ ch }}</span>{% endfor %}<span class="typewriter-caret"></span></span>
         </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 3D Laptop Scroll Showcase & Core Capabilities -->
+  <section id="services" class="laptop-scroll-track">
+    <div class="laptop-sticky-stage">
+      <div class="laptop-header-group">
+        <span class="section-eyebrow" data-reveal="fade">Platform</span>
+        <h2 class="section-title" data-reveal="words">Core Capabilities</h2>
+      </div>
+
+      <div class="laptop-viewport-rig">
+        <div class="laptop-device">
+          <!-- 3D Opening Lid - 83% width of base to match reference image -->
+          <div class="laptop-lid" id="laptopLid">
+            <div class="macbook-outer-lid">
+              <div class="macbook-bezel">
+                <div class="macbook-camera"></div>
+                <!-- Clean 16:10 Screen Display with plain text and vectors (no fake topbar) -->
+                <div class="macbook-screen">
+                  <div class="screen-capabilities-grid" id="laptopTilesGrid">
+                    <!-- Capability 1 -->
+                    <div class="capability-item laptop-tile" data-tile-index="0">
+                      <div class="capability-vector">{{ icon('upload', size=22) }}</div>
+                      <h3 class="capability-title">PDF Extraction</h3>
+                      <p class="capability-desc">Multi-engine OCR captures line items, HSN codes, and vendor GSTIN with automated boundary detection.</p>
+                      <div class="capability-metric" data-count="99.8" data-suffix="%">99.8%</div>
+                    </div>
+
+                    <!-- Capability 2 -->
+                    <div class="capability-item laptop-tile" data-tile-index="1">
+                      <div class="capability-vector">{{ icon('check', size=22) }}</div>
+                      <h3 class="capability-title">GST Validation</h3>
+                      <p class="capability-desc">Checks GSTIN checksums, verifies intra-state vs inter-state tax splits, and flags statutory errors.</p>
+                      <div class="capability-metric" data-count="100" data-suffix="%">100%</div>
+                    </div>
+
+                    <!-- Capability 3 -->
+                    <div class="capability-item laptop-tile" data-tile-index="2">
+                      <div class="capability-vector">{{ icon('parties', size=22) }}</div>
+                      <h3 class="capability-title">Ledger &amp; Ageing</h3>
+                      <p class="capability-desc">Track what you owe and what is due to collect with clean 5-tier ageing breakdowns and payment logging.</p>
+                      <div class="capability-metric" data-count="5" data-suffix=" Tiers">5 Tiers</div>
+                    </div>
+
+                    <!-- Capability 4 -->
+                    <div class="capability-item laptop-tile" data-tile-index="3">
+                      <div class="capability-vector">{{ icon('reports', size=22) }}</div>
+                      <h3 class="capability-title">GST Summary Reports</h3>
+                      <p class="capability-desc">Generate monthly GSTR-1 outwards and GSTR-3B summary schedules ready for instant tax filing.</p>
+                      <div class="capability-metric" data-count="0" data-prefix="Lag: " data-suffix="s">Lag: 0s</div>
+                    </div>
+
+                    <!-- Capability 5 -->
+                    <div class="capability-item laptop-tile" data-tile-index="4">
+                      <div class="capability-vector">{{ icon('shield', size=22) }}</div>
+                      <h3 class="capability-title">Multi-Tenant Isolation</h3>
+                      <p class="capability-desc">Every business owns a strictly isolated schema partition with role-based access control and audit logging.</p>
+                      <div class="capability-metric" data-count="256" data-suffix="-bit">256-bit</div>
+                    </div>
+
+                    <!-- Capability 6 -->
+                    <div class="capability-item laptop-tile" data-tile-index="5">
+                      <div class="capability-vector">{{ icon('exports', size=22) }}</div>
+                      <h3 class="capability-title">Accounting Exports</h3>
+                      <p class="capability-desc">Export verified records to Tally XML, Excel spreadsheets, CSV data streams, and formatted PDF ledgers.</p>
+                      <div class="capability-metric" data-count="4" data-suffix=" Formats">4 Formats</div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Bottom chin with subtle brand text matching MacBook Pro reference -->
+                <div class="macbook-chin">
+                  <span class="macbook-brand-text">Axion</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Base / Chassis matching reference image -->
+          <div class="macbook-base">
+            <div class="macbook-base-lip"></div>
+            <div class="macbook-notch"></div>
+          </div>
+          <div class="macbook-shadow"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Statement Banner Section -->
+  <section class="cta-banner-section">
+    <div class="cta-banner-container" data-reveal="fade-up">
+      <h2 class="cta-banner-title">Start organizing your business better with us Today.</h2>
+    </div>
+  </section>
+  </main>
+
+  <!-- 7. Minimalist Apple-Style Footer -->
+  <footer class="public-footer">
+    <div class="footer-grid">
+      <!-- Col 1: Brand & Logo -->
+      <div class="footer-col">
+        <div style="display: flex; align-items: center; gap: var(--sp-2);">
+          <img src="/static/img/axion-lockup.svg" alt="Axion" height="30" style="display: block;">
+        </div>
       </div>
 
       <!-- Col 2: Legal -->
@@ -460,17 +1191,17 @@
         </ul>
       </div>
 
-      <!-- Col 3: Contact Details (Address removed) -->
+      <!-- Col 3: Contact Details -->
       <div class="footer-col">
         <h4>Contact</h4>
         <ul>
           <li style="display: flex; align-items: center; gap: 8px;">
             {{ icon('mail', size=15) }}
-            <a href="mailto:{{ site_email }}">{{ site_email }}</a>
+            <a href="mailto:axion@xmail.com">axion@xmail.com</a>
           </li>
           <li style="display: flex; align-items: center; gap: 8px;">
             {{ icon('phone', size=15) }}
-            <span>{{ site_phone }}</span>
+            <span>+91 XXX XXX XXXX</span>
           </li>
         </ul>
       </div>
@@ -481,7 +1212,7 @@
       <div>&copy; {{ current_year }} {{ site_copyright }}. All rights reserved.</div>
       <div style="display: flex; gap: var(--sp-4);">
         <span>Encrypted Multi-Tenant Storage</span>
-        <span>•</span>
+        <span>&bull;</span>
         <span>Made for Indian Enterprise</span>
       </div>
     </div>
@@ -497,7 +1228,6 @@
       const ctx = canvas.getContext('2d');
       let w, h;
       let particles = [];
-      let isVisible = true;
       let mouse = { x: -1000, y: -1000, active: false };
 
       function resize() {
@@ -508,7 +1238,6 @@
       window.addEventListener('resize', resize);
       resize();
 
-      // Mouse tracking for interactive celestial ripple
       window.addEventListener('mousemove', (e) => {
         const rect = canvas.getBoundingClientRect();
         mouse.x = e.clientX - rect.left;
@@ -518,81 +1247,24 @@
 
       window.addEventListener('mouseleave', () => {
         mouse.active = false;
-        mouse.x = -1000;
-        mouse.y = -1000;
       });
 
-      // Colors from Moon Palette in RGBA
-      const colorPalette = [
-        'rgba(245, 213, 224, ',  // Moon Blush
-        'rgba(102, 103, 171, ',  // Moon Periwinkle
-        'rgba(123, 51, 126, ',   // Moon Orchid
-      ];
-
-      const count = Math.min(65, Math.floor((w * h) / 14000));
-      for (let i = 0; i < count; i++) {
-        const colorPrefix = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+      const particleCount = 38;
+      for (let i = 0; i < particleCount; i++) {
         particles.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          vx: (Math.random() - 0.5) * 0.45,
-          vy: (Math.random() - 0.5) * 0.45,
-          r: Math.random() * 1.8 + 0.6,
-          baseAlpha: Math.random() * 0.45 + 0.25,
-          colorPrefix: colorPrefix,
-          pulseSpeed: Math.random() * 0.02 + 0.008,
-          pulseAngle: Math.random() * Math.PI * 2
+          x: Math.random() * (w || 1000),
+          y: Math.random() * (h || 600),
+          radius: Math.random() * 2 + 1.2,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          alpha: Math.random() * 0.35 + 0.15
         });
       }
 
-      function render() {
-        if (!isVisible) return;
+      function draw() {
         ctx.clearRect(0, 0, w, h);
-
-        const pLen = particles.length;
-
-        // Draw connecting constellation lines
-        for (let i = 0; i < pLen; i++) {
-          for (let j = i + 1; j < pLen; j++) {
-            const dx = particles[i].x - particles[j].x;
-            const dy = particles[i].y - particles[j].y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 95) {
-              const alpha = (1 - dist / 95) * 0.16;
-              ctx.strokeStyle = 'rgba(102, 103, 171, ' + alpha + ')';
-              ctx.lineWidth = 0.75;
-              ctx.beginPath();
-              ctx.moveTo(particles[i].x, particles[i].y);
-              ctx.lineTo(particles[j].x, particles[j].y);
-              ctx.stroke();
-            }
-          }
-        }
-
-        // Draw and update particles
-        for (let i = 0; i < pLen; i++) {
-          let p = particles[i];
-
-          // Mouse proximity interaction (smooth celestial repulsion / gentle pull)
-          if (mouse.active) {
-            const mdx = p.x - mouse.x;
-            const mdy = p.y - mouse.y;
-            const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-            if (mdist < 140 && mdist > 0) {
-              const force = (1 - mdist / 140) * 1.2;
-              p.x += (mdx / mdist) * force;
-              p.y += (mdy / mdist) * force;
-
-              // Delicate connection to cursor
-              ctx.strokeStyle = 'rgba(245, 213, 224, ' + (0.22 * (1 - mdist / 140)) + ')';
-              ctx.lineWidth = 0.8;
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(mouse.x, mouse.y);
-              ctx.stroke();
-            }
-          }
-
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
           p.x += p.vx;
           p.y += p.vy;
 
@@ -601,24 +1273,225 @@
           if (p.y < 0) p.y = h;
           if (p.y > h) p.y = 0;
 
-          p.pulseAngle += p.pulseSpeed;
-          const currentAlpha = p.baseAlpha + Math.sin(p.pulseAngle) * 0.18;
-          const clampedAlpha = Math.max(0.1, Math.min(0.85, currentAlpha));
+          if (mouse.active) {
+            const dx = mouse.x - p.x;
+            const dy = mouse.y - p.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 140) {
+              p.x -= dx * 0.025;
+              p.y -= dy * 0.025;
+            }
+          }
 
-          ctx.fillStyle = p.colorPrefix + clampedAlpha + ')';
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(14, 165, 233, ' + p.alpha + ')';
           ctx.fill();
+
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dx = p.x - p2.x;
+            const dy = p.y - p2.y;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d < 110) {
+              const lineAlpha = (1 - d / 110) * 0.15;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = 'rgba(14, 165, 233, ' + lineAlpha + ')';
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
         }
-
-        requestAnimationFrame(render);
+        requestAnimationFrame(draw);
       }
-      render();
+      requestAnimationFrame(draw);
+    })();
 
-      document.addEventListener('visibilitychange', () => {
-        isVisible = !document.hidden;
-        if (isVisible) render();
+    // Workflow Tile Flip & Expand Animation
+    (function() {
+      const overlay = document.getElementById('workflowOverlay');
+      const card = document.getElementById('workflowModalCard');
+      const closeBtn = document.getElementById('workflowModalClose');
+      const badgeEl = document.getElementById('workflowModalBadge');
+      const titleEl = document.getElementById('workflowModalTitle');
+      const descEl = document.getElementById('workflowModalDesc');
+      const tiles = document.querySelectorAll('.step-tile');
+
+      if (!overlay || !card || tiles.length === 0) return;
+
+      let activeTile = null;
+      let isAnimating = false;
+
+      function openTile(tile) {
+        if (isAnimating) return;
+        isAnimating = true;
+        activeTile = tile;
+        tile.setAttribute('aria-expanded', 'true');
+
+        const step = tile.dataset.step || '';
+        const title = tile.dataset.title || '';
+        const desc = tile.dataset.desc || '';
+
+        badgeEl.textContent = step;
+        titleEl.textContent = title;
+        descEl.textContent = desc;
+
+        // Calculate tile position relative to center of viewport
+        const rect = tile.getBoundingClientRect();
+        const viewportCenterX = window.innerWidth / 2;
+        const viewportCenterY = window.innerHeight / 2;
+        const tileCenterX = rect.left + rect.width / 2;
+        const tileCenterY = rect.top + rect.height / 2;
+
+        const dx = tileCenterX - viewportCenterX;
+        const dy = tileCenterY - viewportCenterY;
+        const scaleX = Math.max(0.2, rect.width / 520);
+        const scaleY = Math.max(0.2, rect.height / 260);
+
+        // Position initial squircle directly over tile, flipped 180deg
+        overlay.style.display = 'flex';
+        card.style.transition = 'none';
+        card.style.transform = `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY}) rotateY(180deg)`;
+        card.style.opacity = '0.4';
+        card.offsetHeight; // Force layout reflow
+
+        // Dim source tile
+        tile.style.opacity = '0.2';
+
+        requestAnimationFrame(() => {
+          overlay.classList.add('is-active');
+          overlay.classList.add('is-visible');
+          card.style.transition = 'transform 420ms cubic-bezier(0.16, 1, 0.3, 1), opacity 320ms ease-out';
+          card.style.transform = 'translate(0px, 0px) scale(1, 1) rotateY(0deg)';
+          card.style.opacity = '1';
+
+          setTimeout(() => {
+            isAnimating = false;
+            if (closeBtn) closeBtn.focus();
+          }, 420);
+        });
+      }
+
+      function closeTile() {
+        if (!activeTile || isAnimating) return;
+        isAnimating = true;
+
+        // Recalculate tile center in case of scroll
+        const rect = activeTile.getBoundingClientRect();
+        const viewportCenterX = window.innerWidth / 2;
+        const viewportCenterY = window.innerHeight / 2;
+        const tileCenterX = rect.left + rect.width / 2;
+        const tileCenterY = rect.top + rect.height / 2;
+
+        const dx = tileCenterX - viewportCenterX;
+        const dy = tileCenterY - viewportCenterY;
+        const scaleX = Math.max(0.2, rect.width / 520);
+        const scaleY = Math.max(0.2, rect.height / 260);
+
+        // Reverse animation: flip and compress back to tile
+        card.style.transition = 'transform 360ms cubic-bezier(0.16, 1, 0.3, 1), opacity 280ms ease-in';
+        card.style.transform = `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY}) rotateY(180deg)`;
+        card.style.opacity = '0';
+        overlay.classList.remove('is-visible');
+
+        // Restore tile in grid
+        activeTile.style.opacity = '1';
+        activeTile.setAttribute('aria-expanded', 'false');
+
+        setTimeout(() => {
+          overlay.style.display = 'none';
+          overlay.classList.remove('is-active');
+          if (activeTile) {
+            activeTile.focus();
+            activeTile = null;
+          }
+          isAnimating = false;
+        }, 360);
+      }
+
+      tiles.forEach(tile => {
+        tile.addEventListener('click', () => openTile(tile));
       });
+
+      // Click anywhere outside card to close
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          closeTile();
+        }
+      });
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeTile);
+      }
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('is-visible')) {
+          closeTile();
+        }
+      });
+    })();
+
+    // 3D Laptop Scroll-Driven Animation & Continuous Reversible Scrub
+    (function() {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const track = document.getElementById('services');
+      const lid = document.getElementById('laptopLid');
+      const tiles = document.querySelectorAll('.laptop-tile');
+
+      if (!track || !lid || tiles.length === 0) return;
+
+      let ticking = false;
+
+      // Thresholds for the 6 tiles
+      const tileThresholds = [0.30, 0.39, 0.48, 0.57, 0.66, 0.75];
+
+      function updateScrub() {
+        ticking = false;
+        const rect = track.getBoundingClientRect();
+        const windowH = window.innerHeight;
+        const trackH = track.offsetHeight;
+        const maxScroll = trackH - windowH;
+
+        if (maxScroll <= 0) return;
+
+        // Progress goes from 0.0 (top entering) to 1.0 (bottom unpinning)
+        const scrolled = -rect.top;
+        const progress = Math.max(0, Math.min(1, scrolled / maxScroll));
+
+        // 1. Laptop Lid rotation: rotateX(-75deg) -> rotateX(0deg) over progress 0.0 -> 0.26
+        const lidOpenProgress = Math.min(1, progress / 0.26);
+        const currentAngle = -75 * (1 - lidOpenProgress);
+        lid.style.transform = 'rotateX(' + currentAngle.toFixed(2) + 'deg)';
+
+        // 2. Tile Arrivals & Reversals (continuous bi-directional sync)
+        for (let i = 0; i < tiles.length; i++) {
+          const threshold = tileThresholds[i] || (0.30 + i * 0.09);
+          if (progress >= threshold) {
+            if (!tiles[i].classList.contains('is-visible')) {
+              tiles[i].classList.add('is-visible');
+            }
+          } else {
+            if (tiles[i].classList.contains('is-visible')) {
+              tiles[i].classList.remove('is-visible');
+            }
+          }
+        }
+      }
+
+      function onScroll() {
+        if (!ticking) {
+          requestAnimationFrame(updateScrub);
+          ticking = true;
+        }
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      // Initial scrub evaluation
+      updateScrub();
     })();
   </script>
 </body>

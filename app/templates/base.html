@@ -6,9 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Axion | {% block title %}Workspace{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+  <link rel="manifest" href="/static/site.webmanifest">
   <link rel="stylesheet" href="/static/css/tokens.css?v=3.2">
+  <link rel="stylesheet" href="/static/css/motion.css?v=3.2">
   <link rel="stylesheet" href="/static/css/base.css?v=3.2">
   <link rel="stylesheet" href="/static/css/components.css?v=3.2">
+  <script src="/static/js/motion.js?v=3.2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Prevent layout shift on first paint if user preferred collapsed rail -->
@@ -43,19 +47,8 @@
       <!-- Brand & Single Collapse Toggle Button -->
       <div class="sidebar-header">
         <a href="/dashboard" class="brand-block">
-          <div class="brand-mark">
-            <svg width="20" height="20" viewBox="0 0 64 64" fill="none">
-              <path d="M32 14L48 48H39.5L34.8 37H29.2L24.5 48H16L32 14Z" fill="url(#brand-accent)" />
-              <polygon points="32,23.5 27.5,33 36.5,33" fill="var(--maroon-3)" />
-              <circle cx="32" cy="14" r="2" fill="var(--moon-blush)" />
-              <defs>
-                <linearGradient id="brand-accent" x1="16" y1="12" x2="48" y2="52" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stop-color="var(--moon-blush)" />
-                  <stop offset="50%" stop-color="var(--moon-periwinkle)" />
-                  <stop offset="100%" stop-color="var(--moon-orchid)" />
-                </linearGradient>
-              </defs>
-            </svg>
+          <div class="brand-mark" style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; background: transparent; box-shadow: none;">
+            <img src="/static/img/axion-mark.svg" alt="Axion Mark" width="30" height="30" style="display: block; border-radius: var(--r-sm);">
           </div>
           <div class="brand-text">
             <span class="brand-title">Axion</span>
@@ -174,7 +167,7 @@
         <div style="width: 32px;"></div>
       </header>
 
-      <main class="main-content">
+      <main class="main-content page-enter">
         {% block content %}{% endblock %}
       </main>
     </div>

@@ -12,7 +12,7 @@
     </p>
   </div>
   <!-- Filter tabs -->
-  <div style="display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.06);">
+  <div style="display: flex; gap: 8px; background: var(--bg-canvas); padding: 4px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
     <button type="button" class="btn btn-sm btn-ghost filter-tab active" data-filter="all" onclick="filterAlerts('all', this)" style="border-radius: var(--radius-xs);">
       <span>All</span>
     </button>
@@ -41,7 +41,7 @@
             </div>
             <div>
               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                <span class="chip" style="font-size: 11px; padding: 2px 8px; background: rgba(255,255,255,0.06); color: var(--text-2); border-color: rgba(255,255,255,0.08); font-weight: 600;">
+                <span class="chip" style="font-size: 11px; padding: 2px 8px; background: var(--bg-canvas); color: var(--text-2); border-color: var(--border-subtle); font-weight: 600;">
                   {{ a.type.upper() }}
                 </span>
                 <span class="text-tertiary" style="font-size: 12px;">
@@ -60,7 +60,7 @@
                 <span>Mark Read</span>
               </button>
             {% else %}
-              <span class="chip" style="font-size: 11px; color: var(--text-3); background: transparent; border-color: rgba(255,255,255,0.06);">
+              <span class="chip" style="font-size: 11px; color: var(--text-3); background: transparent; border-color: var(--border-subtle);">
                 {{ icon('check', size=12) }}
                 <span>Read</span>
               </span>
@@ -130,7 +130,7 @@ async function markRead(alertId, btn) {
       if (card) {
         card.setAttribute('data-read', 'true');
       }
-      btn.outerHTML = '<span class="chip" style="font-size: 11px; color: var(--text-3); background: transparent; border-color: rgba(255,255,255,0.06);"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> <span>Read</span></span>';
+      btn.outerHTML = '<span class="chip" style="font-size: 11px; color: var(--text-3); background: transparent; border-color: var(--border-subtle);"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> <span>Read</span></span>';
 
       if (currentFilter === 'unread' && card) {
         card.style.display = 'none';
@@ -150,7 +150,7 @@ async function markRead(alertId, btn) {
 .filter-tab.active {
   background: var(--maroon-1) !important;
   color: var(--text-1) !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
 }
 </style>
 {% endblock %}

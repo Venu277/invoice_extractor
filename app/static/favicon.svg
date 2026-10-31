@@ -1,18 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="100%" height="100%">
   <defs>
-    <linearGradient id="axion-bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#420D4B" />
-      <stop offset="100%" stop-color="#210635" />
-    </linearGradient>
-    <linearGradient id="axion-accent" x1="16" y1="12" x2="48" y2="52" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#F5D5E0" />
-      <stop offset="50%" stop-color="#6667AB" />
-      <stop offset="100%" stop-color="#7B337E" />
+    <linearGradient id="fav-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="18" fill="url(#axion-bg)" stroke="#7B337E" stroke-width="1.5" />
-  <!-- Abstract architectural A mark -->
-  <path d="M32 14L48 48H39.5L34.8 37H29.2L24.5 48H16L32 14Z" fill="url(#axion-accent)" />
-  <polygon points="32,23.5 27.5,33 36.5,33" fill="#210635" />
-  <circle cx="32" cy="14" r="2" fill="#F5D5E0" />
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="url(#fav-gradient)"/>
+  <path d="M 16,6 L 24,24 C 24.3,24.7 23.8,25.5 23,25.5 L 20.5,25.5 C 19.9,25.5 19.4,25.1 19.2,24.5 L 17.6,20.5 L 14.4,20.5 L 12.8,24.5 C 12.6,25.1 12.1,25.5 11.5,25.5 L 9,25.5 C 8.2,25.5 7.7,24.7 8,24 L 16,6 Z M 16,12.5 L 15.1,17.2 L 16.9,17.2 L 16,12.5 Z"
+        fill="#ffffff"/>
 </svg>

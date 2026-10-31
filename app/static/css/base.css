@@ -1,5 +1,5 @@
 /* Axion Base Styles & CSS Reset
-   Clean Apple-inspired baseline, Moon dark mode ambient glows, typography & accessibility.
+   Light Mode Solid Skeuomorphic Baseline, Qarin-inspired typography & accessible ink.
 */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -11,7 +11,7 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
   font-family: var(--font-family);
   font-size: 15px;
   line-height: 1.5;
@@ -25,14 +25,10 @@ html {
 }
 
 body {
-  color-scheme: dark;
+  color-scheme: light;
   min-height: 100vh;
   background-color: var(--black);
-  background-image:
-    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(123, 51, 126, 0.28), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 85% 100%, rgba(102, 103, 171, 0.22), transparent 70%),
-    linear-gradient(to bottom, var(--black), var(--maroon-3));
-  background-attachment: fixed;
+  background-image: none; /* SOLID LIGHT BACKGROUND — NO GRADIENT BG */
   color: var(--text-1);
   overflow-x: hidden;
   position: relative;
@@ -55,12 +51,12 @@ body {
 /* Typography Hierarchy */
 h1, h2, h3, h4, h5, h6 {
   color: var(--text-1);
-  font-weight: 500;
-  letter-spacing: -0.025em;
+  font-weight: 600;
+  letter-spacing: -0.03em;
   line-height: 1.25;
 }
 
-h1 { font-size: var(--font-size-h1); font-weight: 600; }
+h1 { font-size: var(--font-size-h1); font-weight: 700; }
 h2 { font-size: var(--font-size-h2); }
 h3 { font-size: var(--font-size-h3); }
 
@@ -86,9 +82,9 @@ a:hover {
 
 /* Accessibility: Focus Rings */
 :focus-visible {
-  outline: 2px solid var(--red-700);
-  outline-offset: 3px;
-  box-shadow: 0 0 18px rgba(123, 51, 126, 0.60);
+  outline: 2px solid var(--red-500);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px var(--sky-100);
 }
 
 /* Tabular figures for all money & numbers */
@@ -97,46 +93,15 @@ a:hover {
   letter-spacing: -0.01em;
 }
 
-/* Form Controls & Pickers: Dark Rendering */
-input, select, textarea, button {
-  color-scheme: dark;
+/* Form Controls & Native Pickers */
+input, select, textarea {
   font-family: inherit;
+  font-size: inherit;
+  color-scheme: light;
 }
 
-/* Custom Frosted Dark Moon Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--maroon-3);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--maroon-1);
-  border-radius: var(--r-sm);
-  border: 2px solid var(--maroon-3);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--red-700);
-}
-
-/* High Contrast & Reduced Motion Preferences */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .glass {
-    background: var(--maroon-2) !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
+/* Selection */
+::selection {
+  background: var(--sky-200);
+  color: var(--sky-900);
 }

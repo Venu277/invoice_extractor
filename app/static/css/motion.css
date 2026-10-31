@@ -1,0 +1,370 @@
+/* Accessible screen-reader-only utility */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+/* Axion Motion System - Qarin-inspired transitions & micro-interactions */
+:root {
+  --dur-fast: 160ms;
+  --dur-base: 300ms;
+  --dur-slow: 700ms;
+  --dur-hero: 1000ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-roll: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Base reveal setup: content fully visible by default.
+   Only when html.js is present do elements start hidden. */
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  filter: blur(8px);
+  transition: opacity var(--dur-slow) var(--ease-out),
+              transform var(--dur-slow) var(--ease-out),
+              filter var(--dur-slow) var(--ease-out);
+  transition-delay: var(--d, 0ms);
+  will-change: opacity, transform, filter;
+}
+
+html.js [data-reveal="fade"] {
+  transform: none;
+  filter: none;
+}
+
+html.js [data-reveal="scale"] {
+  transform: scale(0.96) translateY(12px);
+  filter: blur(6px);
+}
+
+html.js [data-reveal="words"] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  will-change: auto;
+}
+
+/* Revealed state */
+html.js [data-reveal].is-revealed,
+html.js [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  will-change: auto;
+}
+
+/* Word mask reveal */
+.word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  line-height: 1.15;
+}
+
+.word-inner {
+  display: inline-block;
+  transform: translateY(115%);
+  transition: transform var(--dur-slow) var(--ease-out);
+  transition-delay: var(--d, 0ms);
+  will-change: transform;
+}
+
+html.js .is-revealed .word-inner,
+html.js .is-in .word-inner {
+  transform: translateY(0);
+  will-change: auto;
+}
+
+/* Button Text-Roll (.btn-roll) */
+.btn-roll {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: flex-start !important;
+  justify-content: center;
+  vertical-align: middle;
+  box-sizing: border-box;
+  height: 42px;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  transform: translateZ(0);
+  transition: transform var(--dur-fast) var(--ease-out),
+              background var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+
+.btn-roll.btn-sm {
+  height: 34px;
+}
+
+.btn-roll.btn-lg {
+  height: 50px;
+}
+
+.btn-roll:active {
+  transform: scale(0.98);
+}
+
+.btn-roll-track {
+  display: flex;
+  flex-direction: column;
+  transition: transform 350ms var(--ease-roll);
+}
+
+.btn-roll:hover .btn-roll-track,
+.btn-roll:focus-visible .btn-roll-track {
+  transform: translateY(-50%);
+}
+
+.btn-roll-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  padding: 0 2px;
+  white-space: nowrap;
+}
+
+.btn-roll.btn-sm .btn-roll-label {
+  height: 34px;
+}
+
+.btn-roll.btn-lg .btn-roll-label {
+  height: 50px;
+}
+
+/* Continuous Marquee Ticker */
+.marquee-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, var(--black) 8%, var(--black) 92%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, var(--black) 8%, var(--black) 92%, transparent 100%);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: axion-marquee 35s linear infinite;
+}
+
+.marquee-container:hover .marquee-track,
+.marquee-container:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes axion-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Accordion Smooth Height Transition */
+.accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-base) var(--ease-out);
+}
+
+.accordion-item[open] .accordion-content,
+.accordion-content.is-open {
+  grid-template-rows: 1fr;
+}
+
+.accordion-inner {
+  overflow: hidden;
+}
+
+/* Typewriter Styles */
+.typewriter-root {
+  position: relative;
+  display: inline;
+}
+
+.typewriter-char {
+  display: inline;
+  transition: opacity 60ms linear;
+}
+
+html.js .typewriter-char:not(.is-typed) {
+  opacity: 0;
+}
+
+.typewriter-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.15em;
+  vertical-align: -0.15em;
+  background-color: var(--red-500);
+  margin-left: 2px;
+  animation: axion-caret 1s steps(2, start) infinite;
+  transition: opacity 400ms var(--ease-out);
+}
+
+.typewriter-caret.is-hidden {
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes axion-caret {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Floating Topbar Compact State */
+.topbar-floating {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-16px);
+  opacity: 0;
+  transition: transform 500ms var(--ease-out),
+              opacity 500ms var(--ease-out),
+              padding var(--dur-base) var(--ease-out),
+              background var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out);
+  z-index: 100;
+}
+
+.topbar-floating.is-loaded {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.topbar-floating.is-compact {
+  top: 12px;
+  padding: 8px 18px;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  background: var(--glass-bg);
+  border: var(--glass-border);
+  border-radius: var(--r-pill);
+  box-shadow: var(--glass-shadow-sm);
+}
+
+/* Specular Card Hover Highlight */
+[data-specular] {
+  position: relative;
+  transition: transform var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+
+[data-specular]:hover {
+  transform: translateY(-4px);
+  border-color: var(--glass-border-accent);
+  box-shadow: var(--glass-shadow-glow);
+}
+
+/* In-App Calm Motion (Authenticated pages) */
+.page-enter {
+  animation: pageFadeUp 300ms var(--ease-out) forwards;
+}
+
+@keyframes pageFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal & Sheet Entrance */
+.modal-enter {
+  animation: modalScale 200ms var(--ease-out) forwards;
+}
+
+@keyframes modalScale {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Toast Slide from Top */
+.toast-enter {
+  animation: toastDown 240ms var(--ease-out) forwards;
+}
+
+@keyframes toastDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tabular figures for animated numbers */
+[data-count] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html.js [data-reveal],
+  html.js [data-reveal="fade"],
+  html.js [data-reveal="scale"],
+  html.js [data-reveal="words"] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    will-change: auto !important;
+  }
+
+  .word-inner {
+    transform: none !important;
+    will-change: auto !important;
+  }
+
+  .marquee-track {
+    animation: none !important;
+    transform: none !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+  }
+
+  .typewriter-char {
+    opacity: 1 !important;
+  }
+
+  .typewriter-caret {
+    display: none !important;
+  }
+
+  .topbar-floating {
+    transform: translateX(-50%) translateY(0) !important;
+    opacity: 1 !important;
+  }
+}

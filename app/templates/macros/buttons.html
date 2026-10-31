@@ -1,0 +1,17 @@
+{% macro roll_button(text, href=none, variant="primary", type="button", class="", id=none, data_attrs="") %}
+  {% if href %}
+    <a href="{{ href }}" class="btn btn-{{ variant }} btn-roll {{ class }}" {% if id %}id="{{ id }}"{% endif %} {{ data_attrs|safe }}>
+      <span class="btn-roll-track">
+        <span class="btn-roll-label">{{ text }}</span>
+        <span class="btn-roll-label" aria-hidden="true">{{ text }}</span>
+      </span>
+    </a>
+  {% else %}
+    <button type="{{ type }}" class="btn btn-{{ variant }} btn-roll {{ class }}" {% if id %}id="{{ id }}"{% endif %} {{ data_attrs|safe }}>
+      <span class="btn-roll-track">
+        <span class="btn-roll-label">{{ text }}</span>
+        <span class="btn-roll-label" aria-hidden="true">{{ text }}</span>
+      </span>
+    </button>
+  {% endif %}
+{% endmacro %}

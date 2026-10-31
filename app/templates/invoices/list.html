@@ -20,7 +20,7 @@
 </div>
 
 <!-- Two Section Segmented Switcher: Current Invoices vs Saved Collections -->
-<div style="display: flex; gap: var(--sp-2); margin-bottom: var(--sp-6); border-bottom: 1px solid rgba(123, 51, 126, 0.30); padding-bottom: var(--sp-3);">
+<div style="display: flex; gap: var(--sp-2); margin-bottom: var(--sp-6); border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--sp-3);">
   <a href="/invoices?view=current" class="btn {% if view == 'current' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm" style="border-radius: var(--r-pill); padding: 8px 18px; font-weight: 600;">
     {{ icon('invoices', size=15) }}
     <span>Current Invoices</span>
@@ -67,7 +67,7 @@
             </div>
           </div>
 
-          <div style="border-top: 1px solid rgba(123, 51, 126, 0.25); padding-top: var(--sp-3); margin-top: var(--sp-4); display: flex; justify-content: space-between; align-items: baseline;">
+          <div style="border-top: 1px solid var(--border-subtle); padding-top: var(--sp-3); margin-top: var(--sp-4); display: flex; justify-content: space-between; align-items: baseline;">
             <div>
               <span style="font-size: 11px; text-transform: uppercase; color: var(--text-3); font-weight: 600; display: block;">Total Amount</span>
               <span class="tabular font-weight-600" style="font-size: 18px; color: var(--text-1);">
@@ -105,7 +105,7 @@
 
 <!-- Active Collection Banner (if inspecting a saved collection) -->
 {% if selected_collection %}
-<div class="card glass" style="margin-bottom: var(--sp-6); padding: var(--sp-5) var(--sp-6); background: rgba(66, 13, 75, 0.55); border: 1px solid rgba(123, 51, 126, 0.65);">
+<div class="card glass" style="margin-bottom: var(--sp-6); padding: var(--sp-5) var(--sp-6); background: var(--sky-50); border: 1px solid var(--sky-200); box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), inset 0 1px 0 var(--border-highlight);">
   <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sp-3);">
     <div style="display: flex; align-items: center; gap: var(--sp-3);">
       <a href="/invoices?view=collections" class="btn btn-ghost btn-sm" title="Back to collections list">
@@ -202,16 +202,12 @@
   <table>
     <thead>
       <tr>
-        <th>Invoice Number</th>
+        <th>Invoice</th>
         <th>Date</th>
-        <th>Direction</th>
-        <th>Party Name</th>
-        <th>GSTIN</th>
-        <th class="text-right">Total Amount</th>
-        <th>Payment</th>
-        <th>Validation</th>
-        <th>Review</th>
-        <th class="text-center">Action</th>
+        <th>Party</th>
+        <th class="text-right">Amount</th>
+        <th>Status</th>
+        <th class="text-right">Action</th>
       </tr>
     </thead>
     <tbody>
@@ -219,67 +215,35 @@
         {% for inv in invoices %}
           <tr>
             <td>
-              <span style="font-weight: 600; color: var(--text-1);">{{ inv.invoice_no }}</span>
+              <a href="/invoices/{{ inv.id }}/review" style="font-weight: 600; color: var(--text-1); text-decoration: none;">{{ inv.invoice_no }}</a>
             </td>
             <td class="tabular" style="color: var(--text-2);">
               {{ inv.invoice_date.strftime('%d/%m/%Y') if inv.invoice_date else '-' }}
             </td>
-            <td>
-              {% if inv.direction == 'sales' %}
-                <span class="chip chip-sales">{{ icon('arrow-right', size=12) }} Sales</span>
-              {% elif inv.direction == 'purchase' %}
-                <span class="chip chip-purchase">{{ icon('arrow-left', size=12) }} Purchase</span>
-              {% else %}
-                <span class="chip chip-info">{{ icon('info', size=12) }} Unknown</span>
-              {% endif %}
-            </td>
-            <td style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            <td style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-1);">
               {{ inv.party.name if inv.party else 'Unknown' }}
             </td>
-            <td>
-              <code style="font-size: 12px; color: var(--text-2); background: rgba(33, 6, 53, 0.65); border: 1px solid rgba(102, 103, 171, 0.30); padding: 2px 6px; border-radius: 4px;">
-                {{ inv.supplier_gstin or inv.buyer_gstin or '-' }}
-              </code>
-            </td>
-            <td class="text-right tabular" style="font-weight: 600;">
+            <td class="text-right tabular" style="font-weight: 500; color: var(--text-1);">
               {{ format_inr(inv.total) }}
             </td>
             <td>
-              {% if inv.payment_status == 'paid' %}
-                <span class="chip chip-ok">{{ icon('check', size=12) }} Paid</span>
-              {% elif inv.payment_status == 'partial' %}
-                <span class="chip chip-warn">{{ icon('alert', size=12) }} Partial</span>
-              {% else %}
-                <span class="chip chip-bad">{{ icon('close', size=12) }} Unpaid</span>
-              {% endif %}
-            </td>
-            <td>
-              {% if inv.validation_status == 'ok' %}
-                <span class="chip chip-ok">{{ icon('check', size=12) }} Valid</span>
-              {% elif inv.validation_status == 'warnings' %}
-                <span class="chip chip-warn">{{ icon('alert', size=12) }} Warnings</span>
-              {% else %}
+              {% if inv.review_status == 'pending_review' %}
+                <span class="chip chip-warn">{{ icon('alert', size=12) }} Needs review</span>
+              {% elif inv.validation_status == 'errors' or inv.review_status == 'rejected' %}
                 <span class="chip chip-bad">{{ icon('close', size=12) }} Errors</span>
-              {% endif %}
-            </td>
-            <td>
-              {% if inv.review_status == 'approved' %}
-                <span class="chip chip-ok">{{ icon('check', size=12) }} Approved</span>
-              {% elif inv.review_status == 'rejected' %}
-                <span class="chip chip-bad">{{ icon('close', size=12) }} Rejected</span>
+              {% elif inv.due_date and today and inv.due_date < today and inv.payment_status != 'paid' %}
+                <span class="chip chip-bad">{{ icon('alert', size=12) }} Overdue</span>
+              {% elif inv.payment_status in ['unpaid', 'partial'] %}
+                <span class="chip chip-warn">{{ icon('clock', size=12) }} Unpaid</span>
               {% else %}
-                <span class="chip chip-warn">{{ icon('alert', size=12) }} Pending</span>
+                <span class="chip chip-ok">{{ icon('check', size=12) }} Paid</span>
               {% endif %}
             </td>
-            <td class="text-center" style="white-space: nowrap;">
-              <a href="/invoices/{{ inv.id }}/review" class="btn btn-ghost btn-sm">
-                <span>Review</span>
-                {{ icon('chevron-right', size=13) }}
-              </a>
+            <td class="text-right" style="white-space: nowrap;">
+              <a href="/invoices/{{ inv.id }}/review" class="btn btn-ghost btn-sm">Review</a>
               {% if inv.review_status == 'pending_review' and user and user.role in ['owner', 'accountant'] %}
-              <button onclick="quickApprove({{ inv.id }})" class="btn btn-primary btn-sm" style="margin-left: 4px; padding: 5px 10px;" title="Approve invoice">
-                {{ icon('check', size=13) }}
-                <span>Approve</span>
+              <button onclick="quickApprove({{ inv.id }})" class="btn btn-primary btn-sm" style="margin-left: 4px; padding: 4px 8px;" title="Approve invoice">
+                Approve
               </button>
               {% endif %}
             </td>
@@ -287,7 +251,7 @@
         {% endfor %}
       {% else %}
         <tr>
-          <td colspan="10" style="padding: 0;">
+          <td colspan="6" style="padding: 0;">
             <div class="empty-state">
               <div class="empty-state-icon">
                 {{ icon('invoices', size=24) }}

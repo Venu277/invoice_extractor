@@ -1,227 +1,503 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Overview{% endblock %}
 
 {% block content %}
-<!-- 1. Header with Live Indian Calendar & Period Filter -->
-<div class="page-header">
-  <div>
-    <div style="display: flex; align-items: center; gap: var(--sp-3); margin-bottom: 6px; flex-wrap: wrap;">
-      <h1 class="page-title" style="margin: 0;">Dashboard</h1>
-      <!-- Live Indian Calendar Badge -->
-      <div class="chip chip-info" style="font-size: 13px; padding: 5px 12px; gap: 7px; background: rgba(66, 13, 75, 0.55); border: 1px solid rgba(123, 51, 126, 0.60); box-shadow: 0 0 12px rgba(123, 51, 126, 0.25);">
-        {{ icon('calendar', size=14) }}
-        <span id="liveIndianDateText" style="font-weight: 500; color: var(--text-1);">Live Indian Calendar</span>
-      </div>
+<style>
+  /* Apple Calm Dashboard Styles - Solid Skeuomorphic Light Theme */
+  .dash-container {
+    max-width: 1140px;
+    margin: 0 auto;
+  }
+
+  /* 1. Header */
+  .dash-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: var(--sp-6);
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+  }
+
+  .dash-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--text-1);
+    margin: 0 0 4px 0;
+  }
+
+  .dash-subtitle {
+    font-size: 13.5px;
+    color: var(--text-3);
+    margin: 0;
+  }
+
+  .dash-month-input {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-1);
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: var(--r-md);
+    outline: none;
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+    transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  }
+
+  .dash-month-input:focus {
+    border-color: var(--sky-500);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+  }
+
+  /* 2. Needs Attention (Calm Actionable Strip) */
+  .needs-attention-box {
+    margin-bottom: var(--sp-6);
+    padding: var(--sp-4) var(--sp-5);
+    border-radius: var(--r-lg);
+    background: var(--sky-50);
+    border: 1px solid var(--sky-200);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03), inset 0 1px 0 var(--border-highlight);
+  }
+
+  .needs-attention-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+
+  .needs-attention-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13.5px;
+    color: var(--sky-900);
+    font-weight: 500;
+  }
+
+  .needs-attention-action {
+    color: var(--btn-primary-text);
+    text-decoration: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: var(--r-sm);
+    background: var(--sky-500);
+    border: 1px solid var(--sky-600);
+    box-shadow: 0 2px 0 var(--sky-700), inset 0 1px 0 var(--border-highlight);
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+
+  .needs-attention-action:hover {
+    background: var(--sky-600);
+    transform: translateY(-1px);
+  }
+
+  .caught-up-line {
+    font-size: 13.5px;
+    color: var(--sky-800);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+  }
+
+  /* 3. This Month Panel */
+  .panel-this-month {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-bottom: var(--sp-6);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-xl);
+    box-shadow: 0 1px 0 var(--border-highlight) inset, 0 4px 14px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+  }
+
+  .metric-cell {
+    padding: var(--sp-6);
+    text-align: left;
+  }
+
+  .metric-cell:not(:last-child) {
+    border-right: 1px solid var(--border-subtle);
+  }
+
+  .metric-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-3);
+    margin-bottom: 6px;
+  }
+
+  .metric-value {
+    font-size: 34px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 6px;
+    line-height: 1.1;
+  }
+
+  .metric-caption {
+    font-size: 12px;
+    color: var(--text-3);
+  }
+
+  /* 4. Owed Panel */
+  .panel-owed {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-6);
+    margin-bottom: var(--sp-6);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-xl);
+    padding: var(--sp-6);
+    box-shadow: 0 1px 0 var(--border-highlight) inset, 0 4px 14px rgba(15, 23, 42, 0.05);
+  }
+
+  .owed-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .owed-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-3);
+  }
+
+  .owed-value {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    color: var(--text-1);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: var(--sp-3);
+  }
+
+  /* Slim 5-Tier Ageing Bar (Tints of Sky Blue) */
+  .slim-ageing-bar {
+    display: flex;
+    height: 6px;
+    border-radius: var(--r-pill);
+    overflow: hidden;
+    background: var(--bg-subtle);
+    margin-bottom: 8px;
+    box-shadow: inset 0 1px 1px rgba(15, 23, 42, 0.06);
+  }
+
+  .ageing-tier-0 { background: var(--sky-200); }
+  .ageing-tier-1 { background: var(--sky-300); }
+  .ageing-tier-2 { background: var(--sky-400); }
+  .ageing-tier-3 { background: var(--sky-500); }
+  .ageing-tier-4 { background: var(--sky-600); }
+
+  .ageing-legend-strip {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-3);
+  }
+
+  /* 5. People Panel */
+  .panel-people {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-xl);
+    padding: var(--sp-6);
+    margin-bottom: var(--sp-6);
+    box-shadow: 0 1px 0 var(--border-highlight) inset, 0 4px 14px rgba(15, 23, 42, 0.05);
+  }
+
+  .people-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-5);
+  }
+
+  .segmented-control {
+    display: inline-flex;
+    background: var(--bg-canvas);
+    padding: 3px;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--border-subtle);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  .segment-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-2);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+  }
+
+  .segment-btn.is-active {
+    background: var(--bg-surface);
+    color: var(--sky-700);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), inset 0 1px 0 var(--border-highlight);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .chart-box {
+    position: relative;
+    height: 180px;
+    width: 100%;
+  }
+
+  /* 6. Recent Invoices Panel */
+  .panel-recent {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-xl);
+    padding: var(--sp-6);
+    box-shadow: 0 1px 0 var(--border-highlight) inset, 0 4px 14px rgba(15, 23, 42, 0.05);
+  }
+
+  .recent-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-4);
+  }
+
+  .recent-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  .recent-table th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-3);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .recent-table td {
+    padding: 12px;
+    color: var(--text-2);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .recent-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .link-view-all {
+    font-size: 13px;
+    color: var(--sky-600);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .link-view-all:hover {
+    text-decoration: underline;
+    color: var(--sky-700);
+  }
+
+  @media (max-width: 800px) {
+    .panel-this-month { grid-template-columns: 1fr; }
+    .metric-cell:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border-subtle); }
+    .panel-owed { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="dash-container">
+  <!-- 1. Header: Title, IST Date, FY Subtitle, Month Picker -->
+  <header class="dash-header">
+    <div>
+      <h1 class="dash-title">Overview</h1>
+      <p id="liveDateSubtitle" class="dash-subtitle">Loading calendar date...</p>
     </div>
-    <p style="font-size: var(--font-size-sm); color: var(--text-3); margin-top: 2px;">
-      Financial overview, GST liability, and business intelligence for {{ selected_month or "All Time" }}.
-    </p>
-  </div>
-  <div class="page-actions">
-    <form method="GET" action="/dashboard" style="display: flex; align-items: center; gap: var(--sp-2);">
-      <input type="month" name="month" value="{{ selected_month or '' }}" aria-label="Select Financial Month" style="width: 175px;">
-      <button type="submit" class="btn btn-primary btn-sm">
-        {{ icon('filter', size=15) }}
-        <span>Apply</span>
-      </button>
+
+    <form method="GET" action="/dashboard" style="display: flex; align-items: center; gap: 8px;">
+      <input type="month" name="month" value="{{ selected_month or '' }}" class="dash-month-input" aria-label="Select month">
+      <button type="submit" class="btn btn-ghost btn-sm">Filter</button>
       {% if selected_month %}
-      <a href="/dashboard" class="btn btn-ghost btn-sm" title="Clear filter">
-        {{ icon('close', size=15) }}
-      </a>
+      <a href="/dashboard" class="btn btn-ghost btn-sm" title="Clear filter">Clear</a>
       {% endif %}
     </form>
-  </div>
-</div>
+  </header>
 
-<!-- 2. Row of Four Stat Cards -->
-<div class="grid-4" style="margin-bottom: var(--sp-6);">
-  <!-- Sales Revenue Card -->
-  <div class="card glass glass-interactive stat-card">
-    <div class="stat-label">
-      <span>Sales Revenue</span>
-      {{ icon('reports', size=16, class='text-muted') }}
-    </div>
-    <div class="stat-value tabular">{{ format_inr(dash.sales_total) }}</div>
-    <div class="stat-caption">
-      {% if dash.mom_change_pct >= 0 %}
-        <span class="chip chip-ok" style="padding: 2px 6px; font-size: 11px;">
-          {{ icon('check', size=12) }} +{{ dash.mom_change_pct }}%
-        </span>
-      {% else %}
-        <span class="chip chip-bad" style="padding: 2px 6px; font-size: 11px;">
-          {{ dash.mom_change_pct }}%
-        </span>
-      {% endif %}
-      <span style="color: var(--text-3); font-size: 12px;">vs previous month</span>
-    </div>
-  </div>
+  <!-- 2. Needs Attention: Top Actionable Items -->
+  <section class="needs-attention-box" aria-label="Action Items">
+    <div class="needs-attention-list">
+      {% set has_attention = false %}
 
-  <!-- Purchases & Expenses Card -->
-  <div class="card glass glass-interactive stat-card">
-    <div class="stat-label">
-      <span>Purchases &amp; Expenses</span>
-      {{ icon('invoices', size=16, class='text-muted') }}
-    </div>
-    <div class="stat-value tabular">{{ format_inr(dash.purchase_total) }}</div>
-    <div class="stat-caption">
-      <span style="color: var(--text-2); font-size: 12px;">Approved inward vendor bills</span>
-    </div>
-  </div>
-
-  <!-- Net GST Liability Card -->
-  <div class="card glass glass-interactive stat-card">
-    {% set net_gst = dash.output_gst - dash.input_gst %}
-    <div class="stat-label">
-      <span>Net GST Liability</span>
-      {{ icon('shield', size=16, class='text-muted') }}
-    </div>
-    <div class="stat-value tabular" style="color: {% if net_gst > 0 %}var(--bad){% else %}var(--ok){% endif %};">
-      {{ format_inr(net_gst) }}
-    </div>
-    <div class="stat-caption">
-      <span style="color: var(--text-3); font-size: 12px;">Output ({{ format_inr(dash.output_gst) }}) - ITC ({{ format_inr(dash.input_gst) }})</span>
-    </div>
-  </div>
-
-  <!-- Pending Reviews Card -->
-  <div class="card glass glass-interactive stat-card">
-    <div class="stat-label">
-      <span>Pending Reviews</span>
-      {{ icon('alert', size=16, class='text-muted') }}
-    </div>
-    <div class="stat-value tabular" style="color: {% if dash.pending_review_count > 0 %}var(--warn){% else %}var(--text-1){% endif %};">
-      {{ dash.pending_review_count }}
-    </div>
-    <div class="stat-caption">
       {% if dash.pending_review_count > 0 %}
-        <a href="/invoices?status=pending_review" style="font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
-          <span>Review pending queue</span>
-          {{ icon('arrow-right', size=13) }}
-        </a>
-      {% else %}
-        <span style="color: var(--ok); font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
-          {{ icon('check', size=13) }} All invoices reviewed
-        </span>
+        {% set has_attention = true %}
+        <div class="needs-attention-row">
+          <span>{{ dash.pending_review_count }} {{ "invoices are" if dash.pending_review_count > 1 else "invoice is" }} waiting for review</span>
+          <a href="/invoices?status=pending_review" class="needs-attention-action">Review</a>
+        </div>
+      {% endif %}
+
+      {% if dash.alerts and dash.alerts|length > 0 %}
+        {% for a in dash.alerts[:2] %}
+          {% set has_attention = true %}
+          <div class="needs-attention-row">
+            <span>{{ a.message }}</span>
+            <a href="/alerts" class="needs-attention-action">View</a>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% if not has_attention %}
+        <div class="caught-up-line">
+          {{ icon('check', size=15) }}
+          <span>You are all caught up.</span>
+        </div>
       {% endif %}
     </div>
-  </div>
-</div>
+  </section>
 
-<!-- 3. Row of Two Wide Cards: Outstanding Receivables & Payables with Ageing Bar -->
-<div class="grid-2" style="margin-bottom: var(--sp-6);">
-  <!-- Outstanding Receivables Wide Card -->
-  <div class="card glass glass-interactive" style="padding: var(--sp-6);">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-2);">
-      <div>
-        <div class="stat-label">Outstanding Receivables</div>
-        <div class="stat-value tabular" style="color: var(--ok); font-size: 30px;">
-          {{ format_inr(dash.receivables_outstanding) }}
-        </div>
+  <!-- PANEL 1: This Month (Sales, Purchases, GST Payable) -->
+  <section class="panel-this-month" aria-label="This Month Figures">
+    <!-- Sales -->
+    <div class="metric-cell">
+      <div class="metric-label">Sales</div>
+      <div class="metric-value" data-count="{{ (dash.sales_total / 100.0)|round(2) }}" data-prefix="Rs. " data-decimals="2">
+        {{ format_inr(dash.sales_total) }}
       </div>
-      <a href="/reports" class="btn btn-ghost btn-sm">
-        <span>View ageing</span>
-        {{ icon('arrow-right', size=14) }}
-      </a>
-    </div>
-    <div class="stat-caption" style="margin-bottom: var(--sp-3);">
-      Unpaid &amp; partial sales invoices from customers
-    </div>
-
-    <!-- Stacked Ageing Bar -->
-    <div class="ageing-bar">
-      {% if dash.receivables_outstanding > 0 %}
-        <div class="ageing-seg ageing-seg-not-due" style="width: 50%;" title="Current / Not Due"></div>
-        <div class="ageing-seg ageing-seg-1-30" style="width: 25%;" title="1-30 Days Overdue"></div>
-        <div class="ageing-seg ageing-seg-31-60" style="width: 15%;" title="31-60 Days Overdue"></div>
-        <div class="ageing-seg ageing-seg-90-plus" style="width: 10%;" title="90+ Days Overdue"></div>
-      {% else %}
-        <div class="ageing-seg ageing-seg-not-due" style="width: 100%;"></div>
-      {% endif %}
-    </div>
-    <div class="ageing-legend">
-      <span class="ageing-legend-item"><span class="legend-dot" style="background: var(--ok);"></span> Not Due</span>
-      <span class="ageing-legend-item"><span class="legend-dot" style="background: color-mix(in srgb, var(--ok) 60%, var(--warn));"></span> 1-30d</span>
-      <span class="ageing-legend-item"><span class="legend-dot" style="background: var(--warn);"></span> 31-60d</span>
-      <span class="ageing-legend-item"><span class="legend-dot" style="background: var(--bad);"></span> 90d+</span>
-    </div>
-  </div>
-
-  <!-- Outstanding Payables Wide Card -->
-  <div class="card glass glass-interactive" style="padding: var(--sp-6);">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-2);">
-      <div>
-        <div class="stat-label">Outstanding Payables</div>
-        <div class="stat-value tabular" style="color: var(--bad); font-size: 30px;">
-          {{ format_inr(dash.payables_outstanding) }}
-        </div>
+      <div class="metric-caption">
+        {% if dash.mom_change_pct >= 0 %}
+          +{{ dash.mom_change_pct }}% vs last month
+        {% else %}
+          {{ dash.mom_change_pct }}% vs last month
+        {% endif %}
       </div>
-      <a href="/reports" class="btn btn-ghost btn-sm">
-        <span>View ageing</span>
-        {{ icon('arrow-right', size=14) }}
-      </a>
-    </div>
-    <div class="stat-caption" style="margin-bottom: var(--sp-3);">
-      Pending bills and expenses owed to vendors
     </div>
 
-    <!-- Stacked Ageing Bar -->
-    <div class="ageing-bar">
-      {% if dash.payables_outstanding > 0 %}
-        <div class="ageing-seg ageing-seg-not-due" style="width: 40%;" title="Not Due"></div>
-        <div class="ageing-seg ageing-seg-1-30" style="width: 30%;" title="1-30 Days"></div>
-        <div class="ageing-seg ageing-seg-61-90" style="width: 20%;" title="61-90 Days"></div>
-        <div class="ageing-seg ageing-seg-90-plus" style="width: 10%;" title="90+ Days"></div>
-      {% else %}
-        <div class="ageing-seg ageing-seg-not-due" style="width: 100%;"></div>
-      {% endif %}
-    </div>
-    <div class="ageing-legend">
-      <span class="ageing-legend-item"><span class="legend-dot" style="background: var(--ok);"></span> Current</span>
-      <span class="ageing-legend-item"><span class="legend-dot" style="background: color-mix(in srgb, var(--ok) 60%, var(--warn));"></span> 1-30d</span>
-      <span class="ageing-legend-item"><span class="legend-dot" style="background: var(--warn);"></span> 31-60d</span>
-      <span class="ageing-legend-item"><span class="legend-dot" style="background: var(--bad);"></span> 90d+</span>
-    </div>
-  </div>
-</div>
-
-<!-- 4. Business Insights Panel (Full Width, Replaces Alerts & Vendor/Customer Charts) -->
-<div class="card glass" style="margin-bottom: var(--sp-6);">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4);">
-    <h2 style="font-size: var(--font-size-h3); display: flex; align-items: center; gap: var(--sp-2); margin: 0;">
-      {{ icon('info', size=18) }}
-      <span>Business Intelligence &amp; Accrual Insights</span>
-    </h2>
-    <a href="/reports" class="btn btn-ghost btn-sm">
-      <span>View Reports &amp; GST</span>
-      {{ icon('arrow-right', size=13) }}
-    </a>
-  </div>
-
-  {% if dash.insights and dash.insights|length > 0 %}
-    <div class="grid-2" style="gap: var(--sp-3);">
-      {% for ins in dash.insights %}
-        <div class="alert-box alert-info" style="margin-bottom: 0; padding: 14px 16px;">
-          {{ icon('check', size=16, class='text-muted') }}
-          <span style="font-size: 13.5px; color: var(--text-1);">{{ ins }}</span>
-        </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="empty-state" style="padding: var(--sp-6);">
-      <div class="empty-state-icon">
-        {{ icon('info', size=24) }}
+    <!-- Purchases -->
+    <div class="metric-cell">
+      <div class="metric-label">Purchases</div>
+      <div class="metric-value" data-count="{{ (dash.purchase_total / 100.0)|round(2) }}" data-prefix="Rs. " data-decimals="2">
+        {{ format_inr(dash.purchase_total) }}
       </div>
-      <h3>Operational Metrics Balanced</h3>
-      <p>Financial parameters, statutory ratios, and tax liabilities are healthy and within standard thresholds.</p>
+      <div class="metric-caption">Approved inward invoices</div>
     </div>
-  {% endif %}
+
+    <!-- GST Payable -->
+    {% set net_gst = dash.output_gst - dash.input_gst %}
+    <div class="metric-cell">
+      <div class="metric-label">GST payable</div>
+      <div class="metric-value" data-count="{{ (net_gst / 100.0)|round(2) }}" data-prefix="Rs. " data-decimals="2">
+        {{ format_inr(net_gst) }}
+      </div>
+      <div class="metric-caption">Output minus input tax credit</div>
+    </div>
+  </section>
+
+  <!-- PANEL 2: Owed (To Collect & To Pay) -->
+  <section class="panel-owed" aria-label="Owed Balances">
+    <!-- To Collect -->
+    <div>
+      <div class="owed-header">
+        <span class="owed-label">To collect</span>
+        <a href="/reports" class="link-view-all">View ageing</a>
+      </div>
+      <div class="owed-value" data-count="{{ (dash.receivables_outstanding / 100.0)|round(2) }}" data-prefix="Rs. " data-decimals="2">
+        {{ format_inr(dash.receivables_outstanding) }}
+      </div>
+      <div class="slim-ageing-bar" aria-label="Receivables Ageing Distribution">
+        <div class="ageing-tier-0" style="width: 50%;" title="Current"></div>
+        <div class="ageing-tier-1" style="width: 25%;" title="1-30 days"></div>
+        <div class="ageing-tier-2" style="width: 15%;" title="31-60 days"></div>
+        <div class="ageing-tier-3" style="width: 10%;" title="61-90+ days"></div>
+      </div>
+      <div class="ageing-legend-strip">
+        <span>Not due</span>
+        <span>1-30d</span>
+        <span>31-60d</span>
+        <span>90d+</span>
+      </div>
+    </div>
+
+    <!-- To Pay -->
+    <div>
+      <div class="owed-header">
+        <span class="owed-label">To pay</span>
+        <a href="/reports" class="link-view-all">View ageing</a>
+      </div>
+      <div class="owed-value" data-count="{{ (dash.payables_outstanding / 100.0)|round(2) }}" data-prefix="Rs. " data-decimals="2">
+        {{ format_inr(dash.payables_outstanding) }}
+      </div>
+      <div class="slim-ageing-bar" aria-label="Payables Ageing Distribution">
+        <div class="ageing-tier-0" style="width: 45%;" title="Current"></div>
+        <div class="ageing-tier-1" style="width: 30%;" title="1-30 days"></div>
+        <div class="ageing-tier-2" style="width: 15%;" title="31-60 days"></div>
+        <div class="ageing-tier-4" style="width: 10%;" title="90+ days"></div>
+      </div>
+      <div class="ageing-legend-strip">
+        <span>Not due</span>
+        <span>1-30d</span>
+        <span>31-60d</span>
+        <span>90d+</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL 3: People (Top Vendors / Top Customers) -->
+  <section class="panel-people" aria-label="Counterparties">
+    <div class="people-header">
+      <span style="font-size: 15px; font-weight: 600; color: var(--text-1);">People</span>
+      <div class="segmented-control" role="tablist">
+        <button id="btnVendors" class="segment-btn is-active" type="button" role="tab" aria-selected="true">Top vendors</button>
+        <button id="btnCustomers" class="segment-btn" type="button" role="tab" aria-selected="false">Top customers</button>
+      </div>
+    </div>
+
+    <div class="chart-box">
+      <canvas id="peopleChart"></canvas>
+    </div>
+  </section>
+
+  <!-- PANEL 4: Recent Invoices -->
+  <section class="panel-recent" aria-label="Recent Invoices">
+    <div class="recent-header">
+      <span style="font-size: 15px; font-weight: 600; color: var(--text-1);">Recent invoices</span>
+      <a href="/invoices" class="link-view-all">View all</a>
+    </div>
+
+    <table class="recent-table">
+      <thead>
+        <tr>
+          <th>Invoice</th>
+          <th>Party</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="recentInvoicesBody">
+        <tr>
+          <td colspan="4" style="text-align: center; color: var(--text-3); padding: var(--sp-6);">
+            Loading recent transactions...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // Live Indian Calendar (IST) Date Formatter
+  // 1. Live Indian Calendar (IST) Date & Financial Year
   try {
     const now = new Date();
     const options = {
@@ -232,21 +508,133 @@ document.addEventListener('DOMContentLoaded', () => {
       timeZone: 'Asia/Kolkata'
     };
     const indianDateStr = new Intl.DateTimeFormat('en-IN', options).format(now);
-
-    // Calculate Indian Financial Year (starts 1st April)
-    const month = now.getMonth(); // 0 is January, 3 is April
-    const fullYear = now.getFullYear();
-    const fyStart = month >= 3 ? fullYear : fullYear - 1;
+    const m = now.getMonth();
+    const fyYear = now.getFullYear();
+    const fyStart = m >= 3 ? fyYear : fyYear - 1;
     const fyEnd = (fyStart + 1).toString().slice(-2);
-    const fyLabel = `FY ${fyStart}-${fyEnd}`;
-
-    const dateElem = document.getElementById('liveIndianDateText');
-    if (dateElem) {
-      dateElem.textContent = `${indianDateStr} • ${fyLabel}`;
+    const subtitle = document.getElementById('liveDateSubtitle');
+    if (subtitle) {
+      subtitle.textContent = `${indianDateStr} • FY ${fyStart}-${fyEnd}`;
     }
   } catch (e) {
-    console.error('Failed to format Indian calendar date', e);
+    console.error('Date error', e);
   }
+
+  // 2. People Segmented Bar Chart (Sky blue theme)
+  const vendorsData = {{ dash.top_vendors|tojson }};
+  const customersData = {{ dash.top_customers|tojson }};
+
+  const canvas = document.getElementById('peopleChart');
+  let chart = null;
+
+  function renderChart(items) {
+    const labels = items.map(d => d.name || 'Unnamed');
+    const values = items.map(d => (d.amount / 100.0) || 0);
+
+    if (chart) chart.destroy();
+    if (!canvas) return;
+
+    chart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: labels.length > 0 ? labels : ['No recorded parties'],
+        datasets: [{
+          data: values.length > 0 ? values : [0],
+          backgroundColor: 'rgba(14, 165, 233, 0.85)',
+          hoverBackgroundColor: 'rgba(2, 132, 199, 1.0)',
+          borderRadius: 4,
+          borderSkipped: false,
+          barThickness: 14
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` Rs. ${Number(ctx.raw).toLocaleString('en-IN')}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(15, 23, 42, 0.06)' },
+            ticks: {
+              color: 'rgba(15, 23, 42, 0.65)',
+              font: { size: 11 },
+              callback: (v) => 'Rs. ' + Number(v).toLocaleString('en-IN')
+            }
+          },
+          y: {
+            grid: { display: false },
+            ticks: {
+              color: 'rgba(15, 23, 42, 0.85)',
+              font: { size: 12 }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  renderChart(vendorsData);
+
+  const btnVendors = document.getElementById('btnVendors');
+  const btnCustomers = document.getElementById('btnCustomers');
+
+  btnVendors?.addEventListener('click', () => {
+    btnVendors.classList.add('is-active');
+    btnVendors.setAttribute('aria-selected', 'true');
+    btnCustomers.classList.remove('is-active');
+    btnCustomers.setAttribute('aria-selected', 'false');
+    renderChart(vendorsData);
+  });
+
+  btnCustomers?.addEventListener('click', () => {
+    btnCustomers.classList.add('is-active');
+    btnCustomers.setAttribute('aria-selected', 'true');
+    btnVendors.classList.remove('is-active');
+    btnVendors.setAttribute('aria-selected', 'false');
+    renderChart(customersData);
+  });
+
+  // 3. Client-side fetch for Recent Invoices
+  fetch('/api/v1/invoices')
+    .then(r => r.json())
+    .then(data => {
+      const tbody = document.getElementById('recentInvoicesBody');
+      if (!tbody) return;
+      if (!Array.isArray(data) || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-3); padding: var(--sp-4);">No invoices recorded yet.</td></tr>';
+        return;
+      }
+      const recent = data.slice(0, 5);
+      tbody.innerHTML = recent.map(inv => {
+        const num = inv.invoice_number || 'INV-' + inv.id;
+        const party = (inv.party && inv.party.name) ? inv.party.name : 'Unknown Party';
+        const amt = 'Rs. ' + ((inv.total || 0) / 100.0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        const status = inv.review_status === 'pending_review' ? 'Needs review'
+                     : inv.review_status === 'rejected' ? 'Errors'
+                     : inv.payment_status === 'paid' ? 'Paid'
+                     : 'Unpaid';
+        const chipClass = status === 'Paid' ? 'chip-ok' : status === 'Needs review' ? 'chip-warn' : 'chip-bad';
+        return `<tr>
+          <td><a href="/invoices/${inv.id}" style="color: var(--text-1); font-weight: 500; text-decoration: none;">${num}</a></td>
+          <td>${party}</td>
+          <td style="font-variant-numeric: tabular-nums;">${amt}</td>
+          <td><span class="chip ${chipClass}" style="font-size: 11.5px; padding: 2px 8px;">${status}</span></td>
+        </tr>`;
+      }).join('');
+    })
+    .catch(() => {
+      const tbody = document.getElementById('recentInvoicesBody');
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-3); padding: var(--sp-4);"><a href="/invoices" class="link-view-all">View all invoices in register</a></td></tr>';
+      }
+    });
 });
 </script>
 {% endblock %}
